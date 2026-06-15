@@ -1,0 +1,396 @@
+20:33:53.011 [main                     ] DEBUG Logger               - Configured Logger
+20:33:53.021 [main                     ] DEBUG GameApplication      - Logging settings
+Title: Saelly the Flying Witch
+Version: 0.1.1 - Alpha 1
+Width: 1280
+Height: 756
+Fullscreen: false
+Intro: true
+Profiling: false
+Single step:false
+App Mode: DEVELOPER
+Menu Key: F24
+Stage Style: UNDECORATED
+Scene Factory: class Mark.baseGame.SceneFactory
+
+20:33:53.447 [JavaFX Application Thread] DEBUG FXGLApplication      - Initializing FXGL
+20:33:53.452 [JavaFX Application Thread] INFO  Engine               - FXGL-21.1 (27.03.2024 07.52) on WINDOWS (J:26.0.1 FX:21)
+20:33:53.453 [JavaFX Application Thread] DEBUG Engine               - JRE Vendor Name: Oracle Corporation
+20:33:53.453 [JavaFX Application Thread] DEBUG Engine               - Running on OS: Windows 11 version 10.0
+20:33:53.453 [JavaFX Application Thread] DEBUG Engine               - Architecture: amd64
+20:33:53.453 [JavaFX Application Thread] INFO  Engine               - Source code and latest versions at: https://github.com/AlmasB/FXGL
+20:33:53.453 [JavaFX Application Thread] INFO  Engine               -       Ask questions and discuss at: https://github.com/AlmasB/FXGL/discussions
+20:33:53.453 [JavaFX Application Thread] INFO  Engine               -              Join the FXGL chat at: https://gitter.im/AlmasB/FXGL
+20:33:53.680 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Creating a JavaFX scene
+20:33:53.725 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Target settings size: 1280.0 x 756.0
+20:33:53.727 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Scaled scene size:    1280.0 x 756.0
+20:33:53.727 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Scaled ratio: (1.0, 1.0)
+20:33:53.727 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Set initial scene to CustomStartupScene
+20:33:53.729 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Opening main window
+20:33:53.845 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Window border size: (0.0, 0.0)
+20:33:53.845 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Scaled size: 1280.0 x 756.0
+20:33:53.845 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Scaled ratio: (1.0, 1.0)
+20:33:53.845 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Scene size: 1280.0 x 756.0
+20:33:53.845 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Stage size: 1280.0 x 756.0
+20:33:53.852 [FXGL Background Thread 1 ] DEBUG Engine               - Initializing environment variables
+20:33:53.890 [FXGL Background Thread 1 ] DEBUG FXGLAssetLoaderServi - User app class for loading assets: class Mark.baseGame.SaellyApp
+20:33:53.891 [FXGL Background Thread 1 ] DEBUG GameApplicationServi - Applying CSS: fxgl_dark.css
+20:33:53.891 [FXGL Background Thread 1 ] DEBUG FXGLAssetLoaderServi - Loading from file system: jar:file:/C:/Users/info/.m2/repository/com/github/almasb/fxgl/21.1/fxgl-21.1.jar!/fxglassets/ui/css/fxgl_dark.css
+20:33:53.924 [FXGL Background Thread 1 ] DEBUG GameApplicationServi - Initializing application scenes
+20:33:53.925 [FXGL Background Thread 1 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/gameBackgroundLoopable.png
+20:33:53.974 [FXGL Background Thread 1 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/ui/ui_loadingAnimation.png
+20:33:54.252 [FXGL Background Thread 1 ] DEBUG GameWorld            - Game world initialized
+20:33:54.282 [FXGL Background Thread 1 ] DEBUG PhysicsWorld         - Physics world initialized: appHeight=756, physics.ppm=50,0
+20:33:54.282 [FXGL Background Thread 1 ] DEBUG PhysicsWorld         - Using strategy: BRUTE_FORCE
+20:33:54.287 [FXGL Background Thread 1 ] DEBUG GameScene            - Game scene initialized: 1280x756
+20:33:54.288 [FXGL Background Thread 1 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/ui/ui_appIcon.png
+20:33:54.330 [FXGL Background Thread 1 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/ui/ui_sound_unmute_image.png
+20:33:54.403 [FXGL Background Thread 1 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/ui/ui_sound_muted_image.png
+20:33:54.478 [FXGL Background Thread 1 ] DEBUG GameApplicationServi - Application scenes initialized
+20:33:54.489 [FXGL Background Thread 1 ] DEBUG SystemBundleService  - Loading FXGL system data
+20:33:54.490 [FXGL Background Thread 1 ] DEBUG FileSystemAccess     - Reading from: C:\Users\info\OneDrive\Dokumente\java-workspace\baseGame\system\fxgl.bundle
+20:33:54.492 [FXGL Background Thread 1 ] DEBUG SystemBundleService  - Bundle FXGL: {}
+20:33:54.492 [FXGL Background Thread 1 ] DEBUG UpdaterService       - Checking for updates
+20:33:54.497 [FXGL Background Thread 4 ] DEBUG FXGLApplication      - Loading fonts
+20:33:54.498 [FXGL Background Thread 1 ] DEBUG FXGLApplication      - Loading default localization
+20:33:54.498 [FXGL Background Thread 1 ] DEBUG FXGLAssetLoaderServi - Loading from file system: jar:file:/C:/Users/info/.m2/repository/com/github/almasb/fxgl/21.1/fxgl-21.1.jar!/fxglassets/languages/german.lang
+20:33:54.498 [FXGL Background Thread 4 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/ui/fonts/EagleLake.ttf
+20:33:54.514 [FXGL Background Thread 1 ] WARN  LocalizationService  - Saelly the Flying Witch is not localized for language GERMAN
+20:33:54.514 [FXGL Background Thread 1 ] WARN  LocalizationService  - server.version is not localized for language GERMAN
+20:33:54.516 [FXGL Background Thread 1 ] WARN  LocalizationService  - menu.music is not localized for language GERMAN
+20:33:54.516 [FXGL Background Thread 1 ] WARN  LocalizationService  - menu.jump is not localized for language GERMAN
+20:33:54.516 [FXGL Background Thread 1 ] WARN  LocalizationService  - menu.restart is not localized for language GERMAN
+20:33:54.516 [FXGL Background Thread 1 ] WARN  LocalizationService  - menu.windowed is not localized for language GERMAN
+20:33:54.516 [FXGL Background Thread 1 ] WARN  LocalizationService  - menu.borderless is not localized for language GERMAN
+20:33:54.516 [FXGL Background Thread 1 ] WARN  LocalizationService  - menu.exit_confirm is not localized for language GERMAN
+20:33:54.516 [FXGL Background Thread 1 ] WARN  LocalizationService  - menu.mode is not localized for language GERMAN
+20:33:54.516 [FXGL Background Thread 1 ] WARN  LocalizationService  - menu.windowed is not localized for language GERMAN
+20:33:54.517 [FXGL Background Thread 1 ] INFO  FXGLApplication      - FXGL initialization took: 0,664 sec
+20:33:54.517 [JavaFX Application Thread] DEBUG FXGLApplication      - Registering font factories with UI factory
+20:33:54.525 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Windowed - F10
+20:33:54.525 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Borderless - F11
+20:33:54.525 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Fullscreen - F12
+20:33:54.525 [JavaFX Application Thread] DEBUG Input                - Registered new binding: jump - Space
+20:33:54.525 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Restart Game - Enter
+20:33:54.526 [JavaFX Application Thread] DEBUG Input                - Registered new binding: toggle hitboxes - H
+20:33:54.528 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/ui/heart.png
+20:33:54.582 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/powerups/invulnerable.png
+20:33:54.671 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/music/bgMusic.mp3
+20:33:54.844 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/music/menuMusic.mp3
+20:33:54.855 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/music/gameOverMusic.mp3
+20:33:54.868 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/barriers/topBarrier.png
+20:33:54.874 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/powerups/slowMotion.png
+20:33:54.922 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/powerups/x10Score.png
+20:33:54.958 [FXGL Background Thread 2 ] INFO  UpdaterService       - Your current version:  21.1
+20:33:54.958 [FXGL Background Thread 2 ] INFO  UpdaterService       - Latest stable version: 25
+20:33:54.976 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/powerups/invulnerable.png
+20:33:55.031 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/powerups/extraLife.png
+20:33:55.088 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/sounds/gameOverSound.wav
+20:33:55.094 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/effects/crashEffect.png
+20:33:55.114 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/effects/pickupEffect.png
+20:33:55.130 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/effects/invulnerableEffect.png
+20:33:55.138 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/effects/slowMotionEffect.png
+20:33:55.222 [JavaFX Application Thread] DEBUG FXGLAssetLoaderServi - Loading from file system: jar:file:/C:/Users/info/.m2/repository/com/github/almasb/fxgl/21.1/fxgl-21.1.jar!/fxglassets/textures/fxgl_default_cursor.png
+20:33:55.223 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Screenshot - CTRL+8
+20:33:55.223 [JavaFX Application Thread] DEBUG Input                - Registered new binding: System info dump - CTRL+9
+20:33:55.223 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Restart - CTRL+R
+20:33:55.225 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Toggle Debug Camera - CTRL+7
+20:33:55.227 [JavaFX Application Thread] DEBUG LoopRunner           - Starting loop
+20:33:55.227 [JavaFX Application Thread] DEBUG LoopRunner           - Initializing JavaFX AnimationTimerLoop
+20:33:55.228 [JavaFX Application Thread] DEBUG Input                - Clearing active input actions
+20:33:55.235 [JavaFX Application Thread] DEBUG GameApplicationServi - Removing overlay from CustomStartupScene and adding to CustomIntroScene
+20:33:55.236 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - CustomStartupScene -> CustomIntroScene
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - Logging environment variables
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - achievements: []
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - actualHeight: 756.0
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - actualHeightProperty: ReadOnlyDoubleProperty [value: 756.0]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - actualWidth: 1280.0
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - actualWidthProperty: ReadOnlyDoubleProperty [value: 1280.0]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - appIcon: ui/ui_appIcon.png
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - applicationMode: DEVELOPER
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - cSSList: [fxgl_dark.css]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - collisionDetectionStrategy: BRUTE_FORCE
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - configClass: Optional.empty
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - credits: []
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - defaultCursor: CursorInfo(imageName=fxgl_default_cursor.png, hotspotX=7.0, hotspotY=6.0)
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - devBBoxColorProperty: ObjectProperty [value: 0xff0000ff]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - devEnableDebugCameraProperty: BooleanProperty [value: false]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - devSensorColorProperty: ObjectProperty [value: 0xffff00ff]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - devShowBBoxProperty: BooleanProperty [value: false]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - devShowPositionProperty: BooleanProperty [value: false]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - enabledMenuItems: []
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - engineServices: [class com.almasb.fxgl.app.services.FXGLAssetLoaderService, class com.almasb.fxgl.app.FXGLApplication$GameApplicationService, class com.almasb.fxgl.app.services.FXGLDialogService, class com.almasb.fxgl.app.services.IOTaskExecutorService, class com.almasb.fxgl.io.FileSystemService, class com.almasb.fxgl.localization.LocalizationService, class com.almasb.fxgl.app.services.SystemBundleService, class com.almasb.fxgl.profile.SaveLoadService, class com.almasb.fxgl.ui.FXGLUIFactoryServiceProvider, class com.almasb.fxgl.ui.FXGLDialogFactoryServiceProvider, class com.almasb.fxgl.audio.AudioPlayer, class com.almasb.fxgl.notification.impl.NotificationServiceProvider, class com.almasb.fxgl.achievement.AchievementService, class com.almasb.fxgl.cutscene.CutsceneService, class com.almasb.fxgl.minigames.MiniGameService, class com.almasb.fxgl.net.NetService, class com.almasb.fxgl.app.services.UpdaterService, class com.almasb.fxgl.dev.DevService]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - fontGame: EagleLake.ttf
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - fontMono: EagleLake.ttf
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - fontSizeScaleUI: 1.0
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - fontText: EagleLake.ttf
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - fontUI: EagleLake.ttf
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - fullScreen: BooleanProperty [value: false]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - gameDifficulty: MEDIUM
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - gameDifficultyProperty: ObjectProperty [value: MEDIUM]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - globalMusicVolume: 0.5
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - globalMusicVolumeProperty: DoubleProperty [value: 0.5129870672921439]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - globalSoundVolume: 0.5
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - globalSoundVolumeProperty: DoubleProperty [value: 0.31060606949812886]
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - height: 756
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - is3D: false
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - isAndroid: false
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - isBrowser: false
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - isClickFeedbackEnabled: false
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - isCloseConfirmation: false
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - isDesktop: true
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - isDeveloperMenuEnabled: false
+20:33:57.498 [FXGL Background Thread 3 ] DEBUG Engine               - isEmbedded: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isEntityPreloadEnabled: true
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isExperimentalTiledLargeMap: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isFileSystemWriteAllowed: true
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isFullScreenAllowed: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isFullScreenFromStart: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isGameMenuEnabled: true
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isIOS: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isIntroEnabled: true
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isLinux: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isMac: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isMainMenuEnabled: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isManualResizeEnabled: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isMobile: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isNative: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isPauseMusicWhenMinimized: true
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isPreserveResizeRatio: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isProfilingEnabled: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isScaleAffectedOnResize: true
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isSingleStep: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isUserProfileEnabled: false
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - isWindows: true
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - language: ObjectProperty [value: GERMAN]
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - menuKey: F24
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - mouseSensitivity: 0.2
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - notificationViewClass: class com.almasb.fxgl.notification.view.XboxNotificationView
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - pixelsPerMeter: 50.0
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - platform: WINDOWS
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - prefHeightProperty: ReadOnlyDoubleProperty [value: 756.0]
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - prefWidthProperty: ReadOnlyDoubleProperty [value: 1280.0]
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - profileDir: profiles/
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - profileName: StringProperty [value: DEFAULT]
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - randomSeed: -1
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - runtimeInfo: RuntimeInfo(platform=WINDOWS, version=21.1, build=27.03.2024 07.52)
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - saveFileExt: sav
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - scaledHeightProp$fxgl: DoubleProperty [bound, value: 756.0]
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - scaledWidthProp$fxgl: DoubleProperty [bound, value: 1280.0]
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - sceneFactory: Mark.baseGame.SceneFactory@44b4d376
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - secondsIn24h: 60
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - soundMenuBack: menu/back.wav
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - soundMenuPress: menu/press.wav
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - soundMenuSelect: menu/select.wav
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - soundNotification: core/notification.wav
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - stageStyle: UNDECORATED
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - supportedLanguages: [ENGLISH, FRENCH, GERMAN, HUNGARIAN, RUSSIAN]
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - ticksPerSecond: -1
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - title: Saelly the Flying Witch
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - urlGithub: https://github.com/AlmasB/FXGL
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - urlLeaderboard: http://fxgl-top.herokuapp.com/
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - urlPOM: https://raw.githubusercontent.com/AlmasB/FXGL/release/README.md
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - userAppClass: class Mark.baseGame.SaellyApp
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - version: 0.1.1 - Alpha 1
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - versionCheckDays: 7
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - width: 1280
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - Logging services
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.app.services.FXGLAssetLoaderService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.app.FXGLApplication$GameApplicationService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.app.services.FXGLDialogService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.app.services.IOTaskExecutorService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.io.FileSystemService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.localization.LocalizationService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.app.services.SystemBundleService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.profile.SaveLoadService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.ui.FXGLUIFactoryServiceProvider
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.ui.FXGLDialogFactoryServiceProvider
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.audio.AudioPlayer
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.notification.impl.NotificationServiceProvider
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.achievement.AchievementService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.cutscene.CutsceneService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.minigames.MiniGameService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.net.NetService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.app.services.UpdaterService
+20:33:57.499 [FXGL Background Thread 3 ] DEBUG Engine               - class com.almasb.fxgl.dev.DevService
+20:33:58.229 [JavaFX Application Thread] DEBUG GameApplicationServi - Starting new game
+20:33:58.229 [JavaFX Application Thread] DEBUG Input                - Clearing active input actions
+20:33:58.240 [JavaFX Application Thread] DEBUG GameApplicationServi - Removing overlay from CustomIntroScene and adding to CustomLoadingScene
+20:33:58.240 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - CustomIntroScene -> CustomLoadingScene
+20:33:58.240 [JavaFX Application Thread] DEBUG GameApplicationServi - Clearing previous game
+20:33:58.240 [JavaFX Application Thread] DEBUG GameScene            - Clearing game scene
+20:33:58.240 [JavaFX Application Thread] DEBUG GameWorld            - Clearing game world
+20:33:58.240 [JavaFX Application Thread] DEBUG PhysicsWorld         - Clearing physics world
+20:33:58.241 [FXGL Background Thread 2 ] DEBUG FXGLApplication      - Initializing game
+20:34:02.243 [FXGL Background Thread 2 ] DEBUG AudioPlayer          - Stopping music com.almasb.fxgl.audio.Music@3bb8ff8f
+20:34:02.245 [FXGL Background Thread 2 ] DEBUG AudioPlayer          - Stopping music com.almasb.fxgl.audio.Music@2ba9da9c
+20:34:02.247 [FXGL Background Thread 2 ] DEBUG AudioPlayer          - Stopping music com.almasb.fxgl.audio.Music@20afb60e
+20:34:02.247 [FXGL Background Thread 2 ] DEBUG AudioPlayer          - Playing music com.almasb.fxgl.audio.Music@20afb60e
+20:34:02.259 [FXGL Background Thread 2 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/player/SaellyJump.png
+20:34:02.282 [FXGL Background Thread 2 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/sounds/Jump.wav
+20:34:02.287 [FXGL Background Thread 2 ] DEBUG FXGLAssetLoaderServi - Loading from file system: file:/C:/Users/info/OneDrive/Dokumente/java-workspace/baseGame/target/classes/assets/textures/gameBackgroundLoopable.png
+20:34:02.362 [FXGL Background Thread 2 ] INFO  FXGLApplication      - Game initialization took: 4,121 sec
+20:34:02.959 [JavaFX Application Thread] DEBUG Input                - Clearing active input actions
+20:34:02.969 [JavaFX Application Thread] DEBUG GameApplicationServi - Removing overlay from CustomLoadingScene and adding to GameScene
+20:34:02.969 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - CustomLoadingScene -> GameScene
+20:34:06.979 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Push state: CustomPauseMenuScene
+20:34:06.979 [JavaFX Application Thread] DEBUG Input                - Clearing active input actions
+20:34:06.984 [JavaFX Application Thread] DEBUG AudioPlayer          - Pausing music com.almasb.fxgl.audio.Music@20afb60e
+20:34:06.984 [JavaFX Application Thread] DEBUG AudioPlayer          - Playing music com.almasb.fxgl.audio.Music@2ba9da9c
+20:34:06.984 [JavaFX Application Thread] DEBUG GameApplicationServi - Removing overlay from GameScene and adding to CustomPauseMenuScene
+20:34:06.984 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - GameScene -> CustomPauseMenuScene
+20:34:06.994 [JavaFX Application Thread] WARN  LocalizationService  - menu.leaderboard is not localized for language GERMAN
+20:34:06.997 [JavaFX Application Thread] WARN  LocalizationService  - menu.mainmenu is not localized for language GERMAN
+20:34:07.026 [JavaFX Application Thread] WARN  LocalizationService  - menu.lang_de is not localized for language GERMAN
+20:34:07.027 [JavaFX Application Thread] WARN  LocalizationService  - menu.lang_en is not localized for language GERMAN
+20:34:07.042 [JavaFX Application Thread] WARN  LocalizationService  - menu.yes is not localized for language GERMAN
+20:34:07.043 [JavaFX Application Thread] WARN  LocalizationService  - menu.no is not localized for language GERMAN
+20:34:17.679 [JavaFX Application Thread] WARN  LocalizationService  - menu.mode is not localized for language GERMAN
+20:34:17.679 [JavaFX Application Thread] WARN  LocalizationService  - menu.borderless is not localized for language GERMAN
+20:34:18.670 [JavaFX Application Thread] WARN  LocalizationService  - menu.mode is not localized for language GERMAN
+20:34:19.503 [JavaFX Application Thread] WARN  LocalizationService  - menu.mode is not localized for language GERMAN
+20:34:19.504 [JavaFX Application Thread] WARN  LocalizationService  - menu.windowed is not localized for language GERMAN
+20:34:23.077 [JavaFX Application Thread] WARN  LocalizationService  - #1  AAAAA : 000264 is not localized for language GERMAN
+20:34:23.079 [JavaFX Application Thread] WARN  LocalizationService  - #2  AAAAA : 000132 is not localized for language GERMAN
+20:34:23.079 [JavaFX Application Thread] WARN  LocalizationService  - #3  AAAAA : 000094 is not localized for language GERMAN
+20:34:23.079 [JavaFX Application Thread] WARN  LocalizationService  - #4  AAAAA : 000080 is not localized for language GERMAN
+20:34:23.079 [JavaFX Application Thread] WARN  LocalizationService  - #5  AAAAA : 000059 is not localized for language GERMAN
+20:34:23.079 [JavaFX Application Thread] WARN  LocalizationService  - #6  AAAAA : 000041 is not localized for language GERMAN
+20:34:23.080 [JavaFX Application Thread] WARN  LocalizationService  - #7  AAAAA : 000024 is not localized for language GERMAN
+20:34:23.080 [JavaFX Application Thread] WARN  LocalizationService  - #8  AAAAA : 000021 is not localized for language GERMAN
+20:34:23.080 [JavaFX Application Thread] WARN  LocalizationService  - #9  AAAAA : 000020 is not localized for language GERMAN
+20:34:23.080 [JavaFX Application Thread] WARN  LocalizationService  - #10  AAAAA : 000019 is not localized for language GERMAN
+20:34:23.080 [JavaFX Application Thread] WARN  LocalizationService  - #11  AAAAA : 000018 is not localized for language GERMAN
+20:34:23.080 [JavaFX Application Thread] WARN  LocalizationService  - #12  AAAAA : 000017 is not localized for language GERMAN
+20:34:23.080 [JavaFX Application Thread] WARN  LocalizationService  - #13  AAAAA : 000015 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #14  AAAAA : 000015 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #15  AAAAA : 000015 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #16  AAAAA : 000015 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #17  AAAAA : 000014 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #18  AAAAA : 000013 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #19  AAAAA : 000012 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #20  AAAAA : 000012 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #21  AAAAA : 000012 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #22  AAAAA : 000009 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #23  AAAAA : 000008 is not localized for language GERMAN
+20:34:23.081 [JavaFX Application Thread] WARN  LocalizationService  - #24  AAAAA : 000008 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #25  Merlin : 000006 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #26  AAAAA : 000006 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #27  AAAAA : 000006 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #28  AAAAA : 000005 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #29  AAAAA : 000004 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #30  AAAAA : 000004 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #31  Gandalf : 000003 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #32  AAAAA : 000003 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #33  AAAAA : 000003 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #34  AAAAA : 000003 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #35  AAAAA : 000003 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #36  AAAAA : 000002 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #37  AAAAA : 000002 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #38  AAAAA : 000002 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #39  AAAAA : 000002 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #40  AAAAA : 000002 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #41  AAAAA : 000002 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #42  AAAAA : 000002 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #43  Harry : 000001 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #44  Arthur : 000001 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #45  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.082 [JavaFX Application Thread] WARN  LocalizationService  - #46  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.085 [JavaFX Application Thread] WARN  LocalizationService  - #47  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.085 [JavaFX Application Thread] WARN  LocalizationService  - #48  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.085 [JavaFX Application Thread] WARN  LocalizationService  - #49  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.085 [JavaFX Application Thread] WARN  LocalizationService  - #50  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.085 [JavaFX Application Thread] WARN  LocalizationService  - #51  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.085 [JavaFX Application Thread] WARN  LocalizationService  - #52  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.085 [JavaFX Application Thread] WARN  LocalizationService  - #53  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.085 [JavaFX Application Thread] WARN  LocalizationService  - #54  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.086 [JavaFX Application Thread] WARN  LocalizationService  - #55  AAAAA : 000001 is not localized for language GERMAN
+20:34:23.086 [JavaFX Application Thread] WARN  LocalizationService  - #56  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.086 [JavaFX Application Thread] WARN  LocalizationService  - #57  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.086 [JavaFX Application Thread] WARN  LocalizationService  - #58  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.086 [JavaFX Application Thread] WARN  LocalizationService  - #59  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.086 [JavaFX Application Thread] WARN  LocalizationService  - #60  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.086 [JavaFX Application Thread] WARN  LocalizationService  - #61  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.086 [JavaFX Application Thread] WARN  LocalizationService  - #62  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.087 [JavaFX Application Thread] WARN  LocalizationService  - #63  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.087 [JavaFX Application Thread] WARN  LocalizationService  - #64  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.087 [JavaFX Application Thread] WARN  LocalizationService  - #65  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.087 [JavaFX Application Thread] WARN  LocalizationService  - #66  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.087 [JavaFX Application Thread] WARN  LocalizationService  - #67  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.087 [JavaFX Application Thread] WARN  LocalizationService  - #68  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.087 [JavaFX Application Thread] WARN  LocalizationService  - #69  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #70  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #71  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #72  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #73  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #74  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #75  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #76  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #77  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #78  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #79  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #80  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #81  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #82  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.088 [JavaFX Application Thread] WARN  LocalizationService  - #83  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.089 [JavaFX Application Thread] WARN  LocalizationService  - #84  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.089 [JavaFX Application Thread] WARN  LocalizationService  - #85  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.089 [JavaFX Application Thread] WARN  LocalizationService  - #86  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.089 [JavaFX Application Thread] WARN  LocalizationService  - #87  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #88  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #89  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #90  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #91  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #92  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #93  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #94  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #95  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #96  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.090 [JavaFX Application Thread] WARN  LocalizationService  - #97  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #98  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #99  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #100  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #101  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #102  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #103  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #104  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #105  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #106  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #107  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #108  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.091 [JavaFX Application Thread] WARN  LocalizationService  - #109  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #110  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #111  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #112  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #113  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #114  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #115  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #116  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #117  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #118  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #119  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #120  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #121  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #122  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #123  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #124  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #125  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #126  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.092 [JavaFX Application Thread] WARN  LocalizationService  - #127  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.094 [JavaFX Application Thread] WARN  LocalizationService  - #128  AAAAA : 000000 is not localized for language GERMAN
+20:34:23.094 [JavaFX Application Thread] WARN  LocalizationService  - #129  AAAAA : 000000 is not localized for language GERMAN
+20:34:27.015 [JavaFX Application Thread] WARN  GameApplicationServi - Ignoring gotoMainMenu() because main menu is not enabled
+20:34:30.109 [JavaFX Application Thread] DEBUG Menu                 - fireResume()
+20:34:30.109 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Pop state: CustomPauseMenuScene
+20:34:30.109 [JavaFX Application Thread] DEBUG Input                - Clearing active input actions
+20:34:30.111 [JavaFX Application Thread] DEBUG AudioPlayer          - Stopping music com.almasb.fxgl.audio.Music@2ba9da9c
+20:34:30.112 [JavaFX Application Thread] DEBUG AudioPlayer          - Resuming music com.almasb.fxgl.audio.Music@20afb60e
+20:34:30.113 [JavaFX Application Thread] DEBUG GameApplicationServi - Removing overlay from CustomPauseMenuScene and adding to GameScene
+20:34:30.113 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - GameScene <- CustomPauseMenuScene
+20:34:34.184 [JavaFX Application Thread] DEBUG FXGLApplication      - Exiting FXGL
+20:34:34.184 [JavaFX Application Thread] DEBUG LoopRunner           - Stopping loop
+20:34:34.184 [JavaFX Application Thread] DEBUG SystemBundleService  - Saving FXGL system data
+20:34:34.185 [JavaFX Application Thread] DEBUG FileSystemAccess     - Writing to: C:\Users\info\OneDrive\Dokumente\java-workspace\baseGame\system\fxgl.bundle
+20:34:34.186 [JavaFX Application Thread] DEBUG Async                - Shutting down background threads
+20:34:34.187 [JavaFX Application Thread] DEBUG PrimaryStageWindow   - Closing main window
+20:34:34.209 [JavaFX Application Thread] DEBUG Logger               - Closing Logger
