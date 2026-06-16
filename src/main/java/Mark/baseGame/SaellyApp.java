@@ -28,7 +28,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.*;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -37,6 +39,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -90,6 +93,7 @@ public class SaellyApp extends GameApplication {
 	private Image extraLivesBuffImage;
 
 	private Sound gameOverSound;
+	private Sound buttonTickSound;
 
 	private Button muteButton;
 
@@ -101,14 +105,13 @@ public class SaellyApp extends GameApplication {
 	private ScoreEntry currentRun;
 	private HighscoreLoader highscoreL;
 	private Circle statusIndicator;
-	private ProgressIndicator loadingSpinner;
 	private Boolean isServerReachable = null;
 	private boolean isFetchingData = false;
 	private StackPane modalOverlay;
 	private Text gameVersion;
 	private HBox updatedBox;
 	private HBox topBar;
-	private javafx.beans.property.SimpleBooleanProperty serverOnlineProp = new javafx.beans.property.SimpleBooleanProperty(true);
+	private SimpleBooleanProperty serverOnlineProp = new SimpleBooleanProperty(true);
 
 	//Testliste
 	private List<ScoreEntry> highscoreList = new ArrayList<>();
@@ -238,6 +241,7 @@ public class SaellyApp extends GameApplication {
 		settings.setPreserveResizeRatio(false);
 		settings.setStageStyle(StageStyle.UNDECORATED);
 		settings.setIntroEnabled(true);
+		settings.setMainMenuEnabled(true);
 		settings.setMenuKey(KeyCode.F24);
 
 
@@ -251,9 +255,13 @@ public class SaellyApp extends GameApplication {
 		getLocalizationService().addLanguageData(Language.ENGLISH, ResourceBundle.getBundle(Settings.getBundlePathTexts(), Locale.US));
 		getLocalizationService().addLanguageData(Language.GERMAN, ResourceBundle.getBundle(Settings.getBundlePathTexts(), Locale.GERMAN));
 
-		getSettings().getLanguage().setValue(Language.GERMAN);
-
 		Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+		String savedLang = prefs.get(Settings.getPrefsKeyLanguage(), Settings.getLangGerman());
+		Language currentLang = savedLang.equals(Settings.getLangEnglish()) ? Language.ENGLISH : Language.GERMAN;
+
+		getSettings().getLanguage().setValue(Language.NONE);
+		getSettings().getLanguage().setValue(currentLang);
+
 		FXGL.getSettings().setGlobalMusicVolume(prefs.getDouble("musicVolume", 0.5));
 		FXGL.getSettings().setGlobalSoundVolume(prefs.getDouble("soundVolume", 0.5));
 
@@ -276,6 +284,7 @@ public class SaellyApp extends GameApplication {
 		extraLivesBuffImage = getAssetLoader().loadImage(Settings.getLinkToExtraLivesImage());
 
 		gameOverSound = getAssetLoader().loadSound(Settings.getLinkToGameOverSoundeffect());
+		buttonTickSound = getAssetLoader().loadSound(Settings.getLinkToButtonTickSound());
 
 		crashEffect = getAssetLoader().loadTexture(Settings.getLinkToCrashEffectAnimation());
 		pickupEffect = getAssetLoader().loadTexture(Settings.getLinkToPickupAnimation());
@@ -286,19 +295,13 @@ public class SaellyApp extends GameApplication {
 		highscoreL = new HighscoreLoader(highscoreList);
 		highscoreL.load();
 
+		highscoreL.pingServer(this::updateServerStatusUI);
+
 	}
 	//All stuff thats needed to load before the game starts. 
 	@Override
 	protected void initGame() 
 	{
-
-		//Try block nur zum testen !!!!
-		try {
-			// 4000 Millisekunden = 4 Sekunden Verzögerung
-			Thread.sleep(4000);
-		} catch (InterruptedException e) {
-			System.err.println(Settings.getMsgErrSleep() + e.getMessage());
-		}
 
 		set(Settings.getKeyIsGameOver(), false);
 		set(Settings.getKeyIsCrashing(), false);
@@ -341,14 +344,6 @@ public class SaellyApp extends GameApplication {
 				}
 			}
 		});
-
-		if (highscoreL.isFileCorruptedAndRestored())
-		{
-			getGameTimer().runOnceAfter(()->{
-				String massage = getLocalizationService().getLocalizedString(Settings.getLangKeyCorruptedFile()) + getLocalizationService().getLocalizedString(Settings.getLangKeyLastSync()) + highscoreL.getLastSyncTimestamp();
-				getDialogService().showMessageBox(massage);
-			},Duration.seconds(Settings.getCorruptedDialogDelaySeconds()));
-		}
 
 	}
 
@@ -438,6 +433,7 @@ public class SaellyApp extends GameApplication {
 	protected void initUI()
 	{
 
+		//css loading
 		try {
 			String css = getClass().getResource(Settings.getLinkToCss()).toExternalForm();
 			getGameScene().getRoot().getStylesheets().add(css);
@@ -445,10 +441,56 @@ public class SaellyApp extends GameApplication {
 			System.err.println(Settings.getMsgErrCssMain() + Settings.getLinkToCss());
 		}
 
-		if (windowManager == null) {
-			Platform.runLater(() -> {
+		//click and thick sound for buttons
+		final Button[] lastHoveredInGame = {null};
+
+		getGameScene().getRoot().addEventFilter(MouseEvent.MOUSE_PRESSED, e ->
+		{
+			Node target = (Node) e.getTarget();
+			while (target != null) {
+				if (target instanceof Button)
+				{
+					try { FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToClickSound())); } catch (Exception ex) {}
+					break;
+				}
+				target = target.getParent();
+			}
+		});
+
+		getGameScene().getRoot().addEventFilter(MouseEvent.MOUSE_MOVED, e ->
+		{
+			Node target = (Node) e.getTarget();
+			Button currentHover = null;
+
+			while (target != null)
+			{
+				if (target instanceof Button)
+				{
+					currentHover = (Button) target;
+					break;
+				}
+				target = target.getParent();
+			}
+
+			if (currentHover != null && currentHover != lastHoveredInGame[0])
+			{
+				try { FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToButtonTickSound())); } catch (Exception ex) {}
+				lastHoveredInGame[0] = currentHover;
+			}
+			else if (currentHover == null)
+			{
+				lastHoveredInGame[0] = null;
+			}
+		});
+
+		//Window - Manager
+		if (windowManager == null)
+		{
+			Platform.runLater(() ->
+			{
 				Stage stage = getPrimaryStageSafely();
-				if (stage == null){
+				if (stage == null)
+				{
 					System.err.println(Settings.getMsgErrStage());
 					return;
 				}
@@ -477,8 +519,10 @@ public class SaellyApp extends GameApplication {
 					return;
 				}
 
-				scn.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, event -> {
-					if (event.getCode() == KeyCode.ESCAPE) {
+				scn.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, event ->
+				{
+					if (event.getCode() == KeyCode.ESCAPE)
+					{
 						event.consume();
 						if (isFetchingData) return;
 
@@ -486,17 +530,21 @@ public class SaellyApp extends GameApplication {
 						boolean isGameScene = currentScene == getSceneService().getGameScene();
 						boolean isMenuScene = currentScene instanceof FXGLMenu;
 
-						if (isGameScene) {
+						if (isGameScene)
+						{
 							if (muteButton != null) muteButton.setVisible(false);
 							if (gameVersion != null) gameVersion.setVisible(false);
 							if (statusIndicator != null) statusIndicator.setVisible(false);
 							if (topBar != null) topBar.setVisible(false);
 							getGameController().gotoGameMenu();
 						}
-						else if (isMenuScene) {
-							if (currentScene instanceof CustomPauseMenuScene) {
+						else if (isMenuScene)
+						{
+							if (currentScene instanceof CustomPauseMenuScene)
+							{
 								CustomPauseMenuScene pauseMenu = (CustomPauseMenuScene) currentScene;
-								if (pauseMenu.handleEscapeBack()) {
+								if (pauseMenu.handleEscapeBack())
+								{
 									return;
 								}
 							}
@@ -505,7 +553,7 @@ public class SaellyApp extends GameApplication {
 					}
 				});
 
-				titleBar = new CustomTitleBar(Settings.getWindowTitle(), Settings.getLinkToLogo());
+				titleBar = new CustomTitleBar(Settings.getLinkToLogo());
 
 				getGameScene().getViewport().setY(Settings.getViewportOffsetY());
 				titleBar.visibleProperty().bind(getPrimaryStage().fullScreenProperty().not());
@@ -517,24 +565,26 @@ public class SaellyApp extends GameApplication {
 				titleBar.setViewOrder(Settings.getViewOrderTitlebar());
 				getGameScene().getRoot().getChildren().add(titleBar);
 
-				exitCoordinator = new ExitCoordinator(this::safeBeforeExit, () -> {
-					getGameController().exit();
-				});
+				exitCoordinator = new ExitCoordinator(this::safeBeforeExit, () -> {getGameController().exit();});
 
-				titleBar.setOnLogoClicked(() -> {
+				titleBar.setOnLogoClicked(() ->
+				{
 					if (isFetchingData) return;
 
 					var currentScene = getSceneService().getCurrentScene();
 					boolean isGameScene = currentScene == getSceneService().getGameScene();
 					boolean isMenuScene = currentScene instanceof FXGLMenu;
 
-					if (isGameScene) {
+					if (isGameScene)
+					{
 						if (muteButton != null) muteButton.setVisible(false);
 						if (gameVersion != null) gameVersion.setVisible(false);
 						if (statusIndicator != null) statusIndicator.setVisible(false);
 						if (topBar != null) topBar.setVisible(false);
 						getGameController().gotoGameMenu();
-					} else if (isMenuScene) {
+					}
+					else if (isMenuScene)
+					{
 						getGameController().gotoPlay();
 					}
 				});
@@ -546,7 +596,8 @@ public class SaellyApp extends GameApplication {
 
 				windowManager.initAndApplyStartupMode(WindowMode.WINDOWED);
 
-				getSceneService().getGameMenuScene().ifPresent(menuScene ->{
+				getSceneService().getGameMenuScene().ifPresent(menuScene ->
+				{
 					menuScene.getRoot().sceneProperty().addListener((obs, oldScene,newScene)->{
 						if (newScene != null)
 						{
@@ -1091,5 +1142,6 @@ public class SaellyApp extends GameApplication {
 	{
 		return highscoreList;
 	}
+	public HighscoreLoader getHighscoreL() {return highscoreL;}
 	
 }

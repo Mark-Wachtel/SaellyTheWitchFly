@@ -13,25 +13,30 @@ import javafx.beans.binding.Bindings;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 
+import java.net.URL;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-public class CustomPauseMenuScene extends FXGLMenu {
-
+public class CustomMainMenuScene extends FXGLMenu {
     private WindowMode currentWindowMode = WindowMode.WINDOWED;
     private Language currentLanguage;
 
@@ -42,9 +47,21 @@ public class CustomPauseMenuScene extends FXGLMenu {
     private final VBox leaderboardBox;
     private final VBox creditsBox;
     private final VBox exitBox;
+    private final VBox corruptedBox;
+    private boolean hasCheckedCorruption = false;
+    private double lastMusicVol = Settings.getDefaultRestoreMusicVolume();
+    private double lastSoundVol = Settings.getDefaultRestoreSoundVolume();
 
-    public CustomPauseMenuScene() {
-        super(MenuType.GAME_MENU);
+    private Button lastHoveredButton = null; //memory so tick sound dosen't repeat spammy
+
+    public CustomMainMenuScene() {
+        super(MenuType.MAIN_MENU);
+        URL cssUrl = getClass().getResource(Settings.getLinkToCss());
+        if (cssUrl != null) {
+            getContentRoot().getStylesheets().add(cssUrl.toExternalForm());
+        } else {
+            System.err.println(Settings.getMsgErrCssMain());
+        }
 
         Preferences preferences = Preferences.userNodeForPackage(SaellyApp.class);
         String savedLang = preferences.get(Settings.getPrefsKeyLanguage(), Settings.getLangGerman());
@@ -55,11 +72,49 @@ public class CustomPauseMenuScene extends FXGLMenu {
             currentLanguage = Language.GERMAN;
         }
 
+        ImageView backgroundImage = new ImageView(FXGL.image(Settings.getLinkToBackgroundImage()));
+        backgroundImage.setFitWidth(getAppWidth());
+        backgroundImage.setFitHeight(getAppHeight());
+
+        Rectangle dimOverlay = new Rectangle(getAppWidth(), getAppHeight(), Color.color(0, 0, 0, Settings.getMainMenuDimOpacity()));
+
         StackPane bg = new StackPane();
         bg.setPrefSize(getAppWidth(), getAppHeight());
-        bg.getStyleClass().add(Settings.getCssClassPauseBg());
 
-        //gametitle
+        //click and tick sounds on buttons
+        bg.addEventFilter(MouseEvent.MOUSE_PRESSED, e ->
+        {
+            Node target = (Node) e.getTarget();
+            while (target != null) {
+                if (target instanceof Button) {
+                    playClickSound();
+                    break;
+                }
+                target = target.getParent();
+            }
+        });
+
+        bg.addEventFilter(MouseEvent.MOUSE_MOVED, e ->
+        {
+            Node target = (Node) e.getTarget();
+            Button currentHover = null;
+
+            while (target != null) {
+                if (target instanceof Button) {
+                    currentHover = (Button) target;
+                    break;
+                }
+                target = target.getParent();
+            }
+
+            if (currentHover != null && currentHover != lastHoveredButton) {
+                playTickSound();
+                lastHoveredButton = currentHover;
+            } else if (currentHover == null) {
+                lastHoveredButton = null;
+            }
+        });
+
         CustomTitleBar titleBar = new CustomTitleBar(Settings.getLinkToLogo());
 
         titleBar.setOnCloseClicked(() -> FXGL.getGameController().exit());
@@ -74,40 +129,35 @@ public class CustomPauseMenuScene extends FXGLMenu {
         floatAnim.setAutoReverse(true);
         floatAnim.setCycleCount(Animation.INDEFINITE);
         floatAnim.play();
-
         StackPane.setAlignment(gameTitle, Pos.TOP_CENTER);
         StackPane.setMargin(gameTitle, new Insets(Settings.getMenuTitleMarginTop(), 0, 0, 0));
 
-        //logo & online lable
+        Circle statusIndicator = new Circle(Settings.getStatusIndicatorRadius());
+        Text gameVersion = FXGL.getUIFactoryService().newText("", Color.WHITE, Settings.getFontSizeVersion());
+
+        gameVersion.textProperty().bind(
+                FXGL.localizedStringProperty(Settings.getLangKeyServerVersion())
+                        .concat(" ")
+                        .concat(FXGL.getSettings().getVersion())
+        );
+
+        SaellyApp app = (SaellyApp) FXGL.getAppCast();
+
+        statusIndicator.fillProperty().bind(
+                Bindings.when(app.serverOnlineProperty())
+                        .then(Settings.getColorServerOnline())
+                        .otherwise(Settings.getColorServerOffline())
+        );
+        gameVersion.fillProperty().bind(statusIndicator.fillProperty());
+
+        // Layouting Corner Box
         VBox leftCornerBox = new VBox(Settings.getSpacingMedium());
         leftCornerBox.setAlignment(Pos.BOTTOM_LEFT);
         leftCornerBox.setPickOnBounds(false);
-        leftCornerBox.setMaxSize(VBox.USE_PREF_SIZE, VBox.USE_PREF_SIZE);
-
-        Texture studioLogo = FXGL.texture(Settings.getLinkToLogo());
-        studioLogo.setFitWidth(Settings.getMenuCornerLogoWidth());
-        studioLogo.setPreserveRatio(true);
-
-        Circle statusIndicator = new Circle(Settings.getStatusIndicatorRadius(), Color.GREEN);
-        Text gameVersion = FXGL.getUIFactoryService().newText("", Color.GREEN, Settings.getFontSizeVersion());
-        gameVersion.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyServerVersion()).concat(" ").concat(FXGL.getSettings().getVersion()));
-
-        SaellyApp app = (SaellyApp) FXGL.getAppCast();
-        app.serverOnlineProperty().addListener((obs, oldVal, isOnline) -> {
-            Color currentColor = isOnline ? Settings.getColorServerOnline() : Settings.getColorServerOffline();
-            statusIndicator.setFill(currentColor);
-            gameVersion.setFill(currentColor);
-        });
-
-        Color initColor = app.serverOnlineProperty().get() ? Settings.getColorServerOnline() : Settings.getColorServerOffline();
-        statusIndicator.setFill(initColor);
-        gameVersion.setFill(initColor);
-
+        Texture studioLogo = FXGL.texture(Settings.getLinkToLogo(), Settings.getMenuCornerLogoWidth(), Settings.getMenuCornerLogoWidth());
         HBox updatedBox = new HBox(Settings.getSpacingMedium(), statusIndicator, gameVersion);
         updatedBox.setAlignment(Pos.CENTER_LEFT);
-
         leftCornerBox.getChildren().addAll(studioLogo, updatedBox);
-
         StackPane.setAlignment(leftCornerBox, Pos.BOTTOM_LEFT);
         StackPane.setMargin(leftCornerBox, new Insets(0, 0, Settings.getMenuCornerMarginBottom(), Settings.getVersionBoxOffsetX()));
 
@@ -120,7 +170,29 @@ public class CustomPauseMenuScene extends FXGLMenu {
         btnMute.getStyleClass().add(Settings.getCssClassMuteBtn());
         btnMute.setFocusTraversable(false);
 
-        btnMute.setOnAction(e -> app.toggleMuteFromMenu());
+        btnMute.setOnAction(e ->
+        {
+            Preferences prefs = Preferences.userNodeForPackage(SaellyApp.class);
+            double currentVol = FXGL.getSettings().getGlobalMusicVolume();
+
+            if (currentVol > 0) {
+
+                this.lastMusicVol = currentVol;
+                this.lastSoundVol = FXGL.getSettings().getGlobalSoundVolume();
+
+                FXGL.getSettings().setGlobalMusicVolume(0.0);
+                FXGL.getSettings().setGlobalSoundVolume(0.0);
+            } else {
+                if (this.lastMusicVol <= 0.0) this.lastMusicVol = Settings.getDefaultRestoreMusicVolume();
+                if (this.lastSoundVol <= 0.0) this.lastSoundVol = Settings.getDefaultRestoreSoundVolume();
+
+                FXGL.getSettings().setGlobalMusicVolume(this.lastMusicVol);
+                FXGL.getSettings().setGlobalSoundVolume(this.lastSoundVol);
+
+                prefs.putDouble(Settings.getPrefsKeyMusicVol(), this.lastMusicVol);
+                prefs.putDouble(Settings.getPrefsKeySoundVol(), this.lastSoundVol);
+            }
+        });
 
         FXGL.getSettings().globalMusicVolumeProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() > 0) {
@@ -148,10 +220,11 @@ public class CustomPauseMenuScene extends FXGLMenu {
         menuBox = new VBox(Settings.getMenuBoxSpacing());
         menuBox.setAlignment(Pos.CENTER);
 
-        Button btnResume = new Button();
-        btnResume.getStyleClass().add(Settings.getCssClassMagicalBtn());
-        btnResume.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuResume()));
-        btnResume.setOnAction(e -> fireResume());
+        //neu game
+        Button btnNewGame = new Button();
+        btnNewGame.getStyleClass().add(Settings.getCssClassMagicalBtn());
+        btnNewGame.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuNewGame()));
+        btnNewGame.setOnAction(e -> fireNewGame());
 
         Button btnOptions = new Button();
         btnOptions.getStyleClass().add(Settings.getCssClassMagicalBtn());
@@ -165,16 +238,11 @@ public class CustomPauseMenuScene extends FXGLMenu {
         btnCredits.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnCredits.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuCredits()));
 
-        Button btnMainMenu = new Button();
-        btnMainMenu.getStyleClass().add(Settings.getCssClassMagicalBtn());
-        btnMainMenu.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuMainmenu()));
-        btnMainMenu.setOnAction(e -> FXGL.getGameController().gotoMainMenu());
-
         Button btnExit = new Button();
         btnExit.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnExit.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuExit()));
 
-        menuBox.getChildren().addAll(btnResume, btnOptions, btnLeaderboard, btnCredits, btnMainMenu, btnExit);
+        menuBox.getChildren().addAll(btnNewGame, btnOptions, btnLeaderboard, btnCredits, btnExit);
 
         //option menu
         optionsBox = new VBox(Settings.getMenuBoxSpacing());
@@ -431,6 +499,36 @@ public class CustomPauseMenuScene extends FXGLMenu {
         exitBtnRow.getChildren().addAll(btnYes, btnNo);
         exitBox.getChildren().addAll(textExitConfirm, exitBtnRow);
 
+        corruptedBox = new VBox(Settings.getMenuBoxSpacing());
+        corruptedBox.setAlignment(Pos.CENTER);
+        corruptedBox.setVisible(false);
+
+        Text textCorrupted = new Text();
+        textCorrupted.getStyleClass().add(Settings.getCssClassMagicalText());
+        textCorrupted.setTextAlignment(TextAlignment.CENTER);
+
+        Text textCorruptedButton = new Text();
+        textCorruptedButton.getStyleClass().add(Settings.getCssClassMagicalText());
+        textCorruptedButton.setTextAlignment(TextAlignment.CENTER);
+
+        textCorrupted.textProperty().bind(Bindings.createStringBinding(() ->
+        {
+            HighscoreLoader hl = app.getHighscoreL();
+            String timestamp = (hl != null) ? hl.getLastSyncTimestamp() : "";
+            return FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyCorruptedFile()) + "\n" + FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyLastSync()) + " " + timestamp;
+        }, FXGL.getLocalizationService().selectedLanguageProperty()));
+
+        Button btnCorruptedOk = new Button();
+        btnCorruptedOk.setText(textCorruptedButton.getText());
+        btnCorruptedOk.getStyleClass().add(Settings.getCssClassMagicalBtn());
+        btnCorruptedOk.setOnAction(e ->
+        {
+            corruptedBox.setVisible(false);
+            menuBox.setVisible(true);
+        });
+
+        corruptedBox.getChildren().addAll(textCorrupted, btnCorruptedOk);
+
         //layouting
         btnOptions.setOnAction(e ->
         {
@@ -464,6 +562,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
         StackPane.setMargin(languagesBox, new Insets(Settings.getMenuBoxMarginTop(), 0, 0, 0));
         StackPane.setMargin(leaderboardBox, new Insets(Settings.getMenuBoxMarginTop(), 0, 0, 0));
         StackPane.setMargin(exitBox, new Insets(Settings.getMenuBoxMarginTop(), 0, 0, 0));
+        StackPane.setMargin(corruptedBox, new Insets(Settings.getMenuBoxMarginTop(), 0, 0, 0));
 
         menuBox.setPickOnBounds(false);
         optionsBox.setPickOnBounds(false);
@@ -472,9 +571,69 @@ public class CustomPauseMenuScene extends FXGLMenu {
         languagesBox.setPickOnBounds(false);
         leaderboardBox.setPickOnBounds(false);
         exitBox.setPickOnBounds(false);
+        corruptedBox.setPickOnBounds(false);
 
-        bg.getChildren().addAll(leftCornerBox, btnMute, menuBox, controlsBox, languagesBox, leaderboardBox, optionsBox, creditsBox, exitBox, gameTitle);
-        getContentRoot().getChildren().add(bg);
+
+        bg.getChildren().addAll(titleBar, leftCornerBox, btnMute, menuBox, optionsBox, controlsBox, languagesBox, leaderboardBox, creditsBox, exitBox, corruptedBox, gameTitle);
+        getContentRoot().getChildren().addAll(backgroundImage, dimOverlay, bg);
+
+        //esc-listener
+        getContentRoot().sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.addEventFilter(KeyEvent.KEY_PRESSED, e ->
+                {
+                    if (e.getCode() == KeyCode.ESCAPE) {
+                        boolean handled = handleEscapeBack();
+
+                        if (!handled) {
+                            if (exitBox.isVisible()) {
+                                exitBox.setVisible(false);
+                                menuBox.setVisible(true);
+                            } else {
+                                menuBox.setVisible(false);
+                                exitBox.setVisible(true);
+                            }
+                        }
+                        e.consume();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        try {
+            FXGL.getAudioPlayer().loopMusic(FXGL.getAssetLoader().loadMusic(Settings.getLinkToMenuMusic()));
+        } catch (Exception e) {
+            System.err.println(Settings.getErrMsgMainMenuMusic());
+        }
+
+        if (!hasCheckedCorruption) {
+            hasCheckedCorruption = true;
+            SaellyApp app = (SaellyApp) FXGL.getAppCast();
+            if (app.getHighscoreL() != null && app.getHighscoreL().isFileCorruptedAndRestored()) {
+                menuBox.setVisible(false);
+                corruptedBox.setVisible(true);
+            }
+        }
+    }
+
+    private void playClickSound() {
+        try {
+            FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToClickSound()));
+        } catch (Exception e) {
+            System.err.println(Settings.getErrMsgButtonClickSound() + e.getMessage());
+        }
+    }
+
+    private void playTickSound() {
+        try {
+            FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToButtonTickSound()));
+        } catch (Exception e) {
+            System.err.println(Settings.getErrMsgButtonTickSound() + e.getMessage());
+        }
     }
 
     private void refreshLeaderboard(VBox container, SaellyApp app) {
@@ -498,7 +657,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
         }
     }
 
-    public boolean handleEscapeBack() {
+    protected boolean handleEscapeBack() {
         if (controlsBox.isVisible()) {
             controlsBox.setVisible(false);
             optionsBox.setVisible(true);
@@ -572,8 +731,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
         }
     }
 
-    private HBox createKeybindRow(String langKey, String actionName, String defaultKeyName)
-    {
+    private HBox createKeybindRow(String langKey, String actionName, String defaultKeyName) {
         Text label = new Text();
         label.getStyleClass().add(Settings.getCssClassMagicalText());
         label.textProperty().bind(FXGL.localizedStringProperty(langKey));
@@ -582,8 +740,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
         Button btnKey = new Button();
         btnKey.getStyleClass().add(Settings.getCssClassMagicalBtn());
 
-        Runnable updateBtnText = () ->
-        {
+        Runnable updateBtnText = () -> {
             String currentKey = prefs.get(Settings.getPrefsKeyBindingPrefix() + actionName, defaultKeyName);
             String displayKey = currentKey;
 
@@ -604,15 +761,12 @@ public class CustomPauseMenuScene extends FXGLMenu {
             btnKey.setText(FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyMenuWaiting()));
             btnKey.getStyleClass().add(Settings.getCssClassBtnWaiting());
 
-            EventHandler<KeyEvent> keyListener = new EventHandler<>()
-            {
+            EventHandler<KeyEvent> keyListener = new EventHandler<>() {
                 @Override
-                public void handle(KeyEvent event)
-                {
+                public void handle(KeyEvent event) {
                     KeyCode newKey = event.getCode();
 
-                    if (newKey == KeyCode.ESCAPE)
-                    {
+                    if (newKey == KeyCode.ESCAPE) {
                         updateBtnText.run();
                         btnKey.getStyleClass().remove(Settings.getCssClassBtnWaiting());
                         getContentRoot().getScene().removeEventFilter(KeyEvent.KEY_PRESSED, this);

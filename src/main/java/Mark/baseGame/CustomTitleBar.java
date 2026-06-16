@@ -38,6 +38,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 public class CustomTitleBar extends HBox 
@@ -52,8 +53,10 @@ public class CustomTitleBar extends HBox
 	private Runnable onDragEnd;
 	private Runnable onLogoClicked;
 	private Runnable onCloseClicked;
+
+	private StackPane logoBox;
 	
-	public CustomTitleBar(String title, String logoResourcePath)
+	public CustomTitleBar(String logoResourcePath)
 	{
 		this.getStyleClass().add("custom-title-bar");
 		setPrefHeight(TITLE_BAR_HEIGHT);
@@ -68,7 +71,7 @@ public class CustomTitleBar extends HBox
 		getStyleClass().add("custom-title-bar");
 
 		Region left = buildLeftLogo(logoResourcePath);
-		Region center = buildCenterTitle(title);
+		Region center = buildCenterTitle();
 		Group right = buildRightButton();
 		
 		HBox.setHgrow(center, Priority.ALWAYS);
@@ -80,73 +83,36 @@ public class CustomTitleBar extends HBox
 
 	private Region buildLeftLogo(String logoResourcePath)
 	{
-		StackPane box = new StackPane();
-		box.setPrefSize(Settings.getLogoPrefSizeWidth(), Settings.getLogoPrefSizeHeight());
-		box.setMinSize(Settings.getLogoPrefSizeWidth(), Settings.getLogoPrefSizeHeight());
-		
-		try 
+		logoBox = new StackPane();
+		logoBox.setPrefSize(Settings.getLogoPrefSizeWidth(), Settings.getLogoPrefSizeHeight());
+		logoBox.setMinSize(Settings.getLogoPrefSizeWidth(), Settings.getLogoPrefSizeHeight());
+
+		try
 		{
-		Image img = new Image(Objects.requireNonNull(getClass().getResourceAsStream(Settings.getBasePathTextures()+logoResourcePath)));
-		ImageView logo = new ImageView(img);
-		logo.setPreserveRatio(true);
-		logo.setFitHeight(Settings.getLogoFitHeight());
-		box.getChildren().add(logo);
+			Image img = FXGL.image(logoResourcePath);
+
+			ImageView logo = new ImageView(img);
+			logo.setPreserveRatio(true);
+			logo.setFitHeight(Settings.getLogoFitHeight());
+			logoBox.getChildren().add(logo);
 		}
 		catch(Exception e)
 		{
-			Label fallback = new Label(Settings.getErrorMsgTitlebarLogo());
-			fallback.setTextFill(Color.WHITE);
-			box.getChildren().add(fallback);
+			System.err.println("[TitleBar] Fehler beim Laden des Logos!");
 		}
-		
-		box.setCursor(Cursor.HAND);
 
-		double animDur = Settings.getTitlebarLogoAnimDuration();
-
-		box.setOnMouseEntered(e -> {
-			ScaleTransition st = new ScaleTransition(Duration.seconds(animDur), box);
-			st.setToX(1.15);
-			st.setToY(1.15);
-			st.play();
-		});
-
-		box.setOnMouseExited(e -> {
-			ScaleTransition st = new ScaleTransition(Duration.seconds(animDur), box);
-			st.setToX(1.0);
-			st.setToY(1.0);
-			st.play();
-		});
-
-		box.setOnMouseClicked(e -> {
-			if(e.getButton() == MouseButton.PRIMARY && onLogoClicked != null)
-			{
-
-				double clickDur = Settings.getTitlebarLogoClickDuration();
-				ScaleTransition shrink = new ScaleTransition(Duration.seconds(clickDur), box);
-				shrink.setToX(0.9);
-				shrink.setToY(0.9);
-
-				ScaleTransition grow = new ScaleTransition(Duration.seconds(clickDur), box);
-				grow.setToX(1.15);
-				grow.setToY(1.15);
-
-				SequentialTransition clickAnim = new SequentialTransition(shrink, grow);
-				clickAnim.setOnFinished(event -> onLogoClicked.run());
-				clickAnim.play();
-			}
-			e.consume();
-		});
-		
-		return box;
+		return logoBox;
 	}
 	
-	private Region buildCenterTitle(String title)
+	private Region buildCenterTitle()
 	{
 		StackPane box = new StackPane();
 		box.setAlignment(Pos.CENTER);
 
-		var titleLable = FXGL.getUIFactoryService().newText(title, Color.WHITE, Settings.getTitlebarFontSize());
-		box.getChildren().add(titleLable);
+		Text titleText = new Text();
+		titleText.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyGameTitle()));
+		titleText.getStyleClass().add(Settings.getCssClassMagicalText());
+		box.getChildren().add(titleText);
 
 		return box;
 	}
@@ -279,6 +245,49 @@ public class CustomTitleBar extends HBox
 
 	public void setOnLogoClicked(Runnable onLogoClicked) {
 		this.onLogoClicked = onLogoClicked;
+
+		if (this.onLogoClicked != null && logoBox != null)
+		{
+			logoBox.setCursor(Cursor.HAND);
+
+			double animDur = Settings.getTitlebarLogoAnimDuration();
+
+			logoBox.setOnMouseEntered(e ->
+			{
+				ScaleTransition st = new ScaleTransition(Duration.seconds(animDur), logoBox);
+				st.setToX(1.15);
+				st.setToY(1.15);
+				st.play();
+			});
+
+			logoBox.setOnMouseExited(e ->
+			{
+				ScaleTransition st = new ScaleTransition(Duration.seconds(animDur), logoBox);
+				st.setToX(1.0);
+				st.setToY(1.0);
+				st.play();
+			});
+
+			logoBox.setOnMouseClicked(e ->
+			{
+				if(e.getButton() == MouseButton.PRIMARY) {
+					double clickDur = Settings.getTitlebarLogoClickDuration();
+
+					ScaleTransition shrink = new ScaleTransition(Duration.seconds(clickDur), logoBox);
+					shrink.setToX(0.9);
+					shrink.setToY(0.9);
+
+					ScaleTransition grow = new ScaleTransition(Duration.seconds(clickDur), logoBox);
+					grow.setToX(1.15);
+					grow.setToY(1.15);
+
+					SequentialTransition clickAnim = new SequentialTransition(shrink, grow);
+					clickAnim.setOnFinished(event -> this.onLogoClicked.run());
+					clickAnim.play();
+				}
+				e.consume();
+			});
+		}
 	}
 
 	public void setOnCloseClicked(Runnable onCloseClicked) {

@@ -120,6 +120,9 @@ public class Settings
 
     //Links zu Bildern, Musik und Sounds
     private static final String LINK_TO_BACKGROUND_MUSIC = "bgMusic.mp3"; //Name als String
+    private static final String LINK_TO_MAIN_MENU_MUSIC = "menuMusic.mp3";
+    private static final String LINK_TO_CLICK_SOUND = "buttonClick.wav";
+    private static final String LINK_TO_BUTTON_TICK_SOUND = "buttonTick.wav";
     private static final String LINK_TO_BACKGROUND_IMAGE = "gameBackgroundLoopable.png"; //Name als String
     private static final String LINK_TO_IMAGE_PLAYER_IDLE = "player/SaellyJump.png"; //Name als String
     private static final String LINK_TO_IMAGE_PLAYER_JUMP = "player/SaellyJump.png"; //Name als String
@@ -192,13 +195,16 @@ public class Settings
     private static final double MUTE_BTN_SCALE_NORMAL = 1.0;
     private static final double MUTE_BTN_SCALE_PRESS = 0.9;
     private static final double DEFAULT_RESTORE_VOLUME = 0.5;
-    private static final String LANG_KEY_INGAME_POINTS = "ingame.points"; // Muss in die properties Datei!
     private static final String FORMAT_LIVES = "x %d";
     private static final String FORMAT_GAMEOVER_SCORE = "%06d";
+
+    //Language keys
+    private static final String LANG_KEY_GAME_TITLE = "game.title";
     private static final String LANG_KEY_SERVER_VERSION = "server.version";
     private static final String LANG_KEY_LOADING_TEXT = "menu.loadingText";
     private static final String LANG_KEY_HIGHSCORE_NAME = "highscore.name";
     private static final String LANG_KEY_HIGHSCORE_POINTS = "highscorePoints.name";
+    private static final String LANG_KEY_INGAME_POINTS = "ingame.points";
     private static final String LANG_KEY_FINAL_SCORE = "menu.final_score";
     private static final String LANG_KEY_GAME_OVER = "menu.game_over";
     private static final String LANG_KEY_PRESS_ENTER = "menu.press_enter";
@@ -233,6 +239,8 @@ public class Settings
     private static final String LANG_KEY_MENU_EXIT_CONFIRM = "menu.exit_confirm";
     private static final String LANG_KEY_MENU_YES = "menu.yes";
     private static final String LANG_KEY_MENU_NO = "menu.no";
+    private static final String LANG_KEY_MENU_NEWGAME = "menu.new_game";
+
     private static final int SPACING_SMALL = 5;
     private static final int SPACING_MEDIUM = 8;
     private static final int SPACING_LARGE = 10;
@@ -345,17 +353,23 @@ public class Settings
     private static final String METADATA_FILE_NAME = "sync_metadata.saelly";
     private static final String LANG_KEY_UNKNOWN = "unknow"; // Aus deinem FXGL Localization Service
     private static final String SERVER_RESPONSE_SUCCESS = "Saved successfully!";
-    private static final String ERR_MSG_SERVER_TIMEOUT = "Server not reachable... timeout...";
-    private static final String ERR_MSG_SERVER_ERROR = "Server-error: ";
-    private static final String ERR_MSG_SERVER_OFFLINE = "Timout... server offline...";
-    private static final String ERR_MSG_DIRECT_SAVE_FAILED = "Direktes Online-Speichern fehlgeschlagen: ";
-    private static final String ERR_MSG_NO_HASH = "No hash found!";
-    private static final String ERR_MSG_DATA_MANIPULATED = "Data manipulated!";
-    private static final String ERR_MSG_FILE_CORRUPTED = "File corrupted or decryption failed. Resetting...";
-    private static final String ERR_MSG_SAVE_LOCAL_FAILED = "Can't safe highscore locally: ";
-    private static final String ERR_MSG_ENCRYPT_FAILED = "Error enrypting/saving: ";
-    private static final String ERR_MSG_CREATE_DIR_FAILED = "Error creating directory for highscore datei: ";
-    private static final String ERR_MSG_SAVE_SYNC_TIME_FAILED = "can't safe sync-time: ";
+
+    //Error massages
+    private static final String ERR_MSG_SERVER_TIMEOUT = "[]Server not reachable... timeout...";
+    private static final String ERR_MSG_SERVER_ERROR = "[]Server-error: ";
+    private static final String ERR_MSG_SERVER_OFFLINE = "[]Timout... server offline...";
+    private static final String ERR_MSG_DIRECT_SAVE_FAILED = "[]Direktes Online-Speichern fehlgeschlagen: ";
+    private static final String ERR_MSG_NO_HASH = "[]No hash found!";
+    private static final String ERR_MSG_DATA_MANIPULATED = "[]Data manipulated!";
+    private static final String ERR_MSG_FILE_CORRUPTED = "[]File corrupted or decryption failed. Resetting...";
+    private static final String ERR_MSG_SAVE_LOCAL_FAILED = "[]Can't safe highscore locally: ";
+    private static final String ERR_MSG_ENCRYPT_FAILED = "[]Error enrypting/saving: ";
+    private static final String ERR_MSG_CREATE_DIR_FAILED = "[]Error creating directory for highscore datei: ";
+    private static final String ERR_MSG_SAVE_SYNC_TIME_FAILED = "[]can't safe sync-time: ";
+    private static final String ERR_MSG_MAIN_MENU_MUSIC = "[MainMenu] Can't load menu music.";
+    private static final String ERR_MSG_BUTTON_CLICK_SOUND = "[SoundEffects] Can't load 'buttonClick.wav':";
+    private static final String ERR_MSG_BUTTON_TICK_SOUND = "[SoundEffects] Can't load 'buttonTick.wav':";
+
     //Dummy Daten
     private static final String[] DUMMY_NAMES = {"Merlin", "Gandalf", "Harry", "Arthur"};
     private static final int[] DUMMY_SCORES = {6, 3, 1, 1};
@@ -397,6 +411,10 @@ public class Settings
     private static final Color COLOR_SERVER_ONLINE = Color.GREEN;
     private static final Color COLOR_SERVER_OFFLINE = Color.RED;
     private static final String FORMAT_LEADERBOARD_ENTRY = "#%d  %-5s : %06d";
+    //CustomMainMenu
+    private static final double DEFAULT_RESTORE_MUSIC_VOLUME = 0.5;
+    private static final double DEFAULT_RESTORE_SOUND_VOLUME = 0.5;
+    private static final double MAIN_MENU_DIM_OPACITY = 0.6; //60%
 
     // Animationen für Saelly
     private static final int PLAYER_ANIM_FRAMES_PER_ROW = 5;
@@ -723,6 +741,9 @@ public class Settings
     {
         return LINK_TO_BACKGROUND_MUSIC;
     }
+    public static String getLinkToClickSound() { return LINK_TO_CLICK_SOUND; }
+    public static String getLinkToButtonTickSound() {return LINK_TO_BUTTON_TICK_SOUND;}
+    public static String getLinkToMainMenuMusic() {return LINK_TO_MAIN_MENU_MUSIC; }
     public static String getLinkToBackgroundImage()
     {
         return LINK_TO_BACKGROUND_IMAGE;
@@ -892,6 +913,9 @@ public class Settings
     public static String getMsgSafeExit() { return MSG_SAFE_EXIT; }
     public static double getPowerupPaddingMultiplier() { return POWERUP_PADDING_MULTIPLIER; }
     public static double getLoadingAnimDelaySeconds() { return LOADING_ANIM_DELAY_SECONDS; }
+
+    //Language keys
+    public static String getLangKeyGameTitle() {return LANG_KEY_GAME_TITLE;}
     public static String getLangKeyServerVersion() { return LANG_KEY_SERVER_VERSION; }
     public static String getLangKeyLoadingText() { return LANG_KEY_LOADING_TEXT; }
     public static String getLangKeyHighscoreName() { return LANG_KEY_HIGHSCORE_NAME; }
@@ -930,6 +954,8 @@ public class Settings
     public static String getLangKeyMenuExitConfirm() { return LANG_KEY_MENU_EXIT_CONFIRM; }
     public static String getLangKeyMenuYes() { return LANG_KEY_MENU_YES; }
     public static String getLangKeyMenuNo() { return LANG_KEY_MENU_NO; }
+    public static String getLangKeyMenuNewGame() {return LANG_KEY_MENU_NEWGAME;}
+
     public static int getSpacingSmall() { return SPACING_SMALL; }
     public static int getSpacingMedium() { return SPACING_MEDIUM; }
     public static int getSpacingLarge() { return SPACING_LARGE; }
@@ -1052,6 +1078,8 @@ public class Settings
     public static String getMetadataFileName() { return METADATA_FILE_NAME; }
     public static String getLangKeyUnknown() { return LANG_KEY_UNKNOWN; }
     public static String getServerResponseSuccess() { return SERVER_RESPONSE_SUCCESS; }
+
+    //Error massages
     public static String getErrMsgServerTimeout() { return ERR_MSG_SERVER_TIMEOUT; }
     public static String getErrMsgServerError() { return ERR_MSG_SERVER_ERROR; }
     public static String getErrMsgServerOffline() { return ERR_MSG_SERVER_OFFLINE; }
@@ -1063,6 +1091,10 @@ public class Settings
     public static String getErrMsgEncryptFailed() { return ERR_MSG_ENCRYPT_FAILED; }
     public static String getErrMsgCreateDirFailed() { return ERR_MSG_CREATE_DIR_FAILED; }
     public static String getErrMsgSaveSyncTimeFailed() { return ERR_MSG_SAVE_SYNC_TIME_FAILED; }
+    public static String getErrMsgMainMenuMusic() {return ERR_MSG_MAIN_MENU_MUSIC;}
+    public static String getErrMsgButtonClickSound() {return ERR_MSG_BUTTON_CLICK_SOUND;}
+    public static String getErrMsgButtonTickSound() {return ERR_MSG_BUTTON_TICK_SOUND;}
+
     public static String[] getDummyNames() { return DUMMY_NAMES; }
     public static int[] getDummyScores() { return DUMMY_SCORES; }
     public static String getKeyIsDebugging() { return KEY_IS_DEBUGGING; }
@@ -1107,6 +1139,9 @@ public class Settings
     public static Color getColorServerOnline() { return COLOR_SERVER_ONLINE; }
     public static Color getColorServerOffline() { return COLOR_SERVER_OFFLINE; }
     public static String getFormatLeaderboardEntry() {return FORMAT_LEADERBOARD_ENTRY; }
+    public static double getMainMenuDimOpacity() {return MAIN_MENU_DIM_OPACITY;}
+    public static double getDefaultRestoreMusicVolume() {return DEFAULT_RESTORE_MUSIC_VOLUME;}
+    public static double getDefaultRestoreSoundVolume() {return DEFAULT_RESTORE_SOUND_VOLUME;}
 
     //Player animation getter
     public static int getPlayerAnimFramesPerRow() { return PLAYER_ANIM_FRAMES_PER_ROW; }
