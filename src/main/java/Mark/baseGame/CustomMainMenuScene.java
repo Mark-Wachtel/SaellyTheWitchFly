@@ -5,8 +5,10 @@ import com.almasb.fxgl.app.scene.MenuType;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.localization.Language;
+import com.almasb.fxgl.scene.Scene;
 import com.almasb.fxgl.texture.Texture;
 import javafx.animation.Animation;
+import javafx.animation.PauseTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
@@ -48,6 +50,7 @@ public class CustomMainMenuScene extends FXGLMenu {
     private final VBox creditsBox;
     private final VBox exitBox;
     private final VBox corruptedBox;
+    private Button btnExit;
     private boolean hasCheckedCorruption = false;
     private double lastMusicVol = Settings.getDefaultRestoreMusicVolume();
     private double lastSoundVol = Settings.getDefaultRestoreSoundVolume();
@@ -107,10 +110,13 @@ public class CustomMainMenuScene extends FXGLMenu {
                 target = target.getParent();
             }
 
-            if (currentHover != null && currentHover != lastHoveredButton) {
+            if (currentHover != null && currentHover != lastHoveredButton)
+            {
                 playTickSound();
                 lastHoveredButton = currentHover;
-            } else if (currentHover == null) {
+            }
+            else if (currentHover == null)
+            {
                 lastHoveredButton = null;
             }
         });
@@ -135,11 +141,7 @@ public class CustomMainMenuScene extends FXGLMenu {
         Circle statusIndicator = new Circle(Settings.getStatusIndicatorRadius());
         Text gameVersion = FXGL.getUIFactoryService().newText("", Color.WHITE, Settings.getFontSizeVersion());
 
-        gameVersion.textProperty().bind(
-                FXGL.localizedStringProperty(Settings.getLangKeyServerVersion())
-                        .concat(" ")
-                        .concat(FXGL.getSettings().getVersion())
-        );
+        gameVersion.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyServerVersion()).concat(" ").concat(FXGL.getSettings().getVersion()));
 
         SaellyApp app = (SaellyApp) FXGL.getAppCast();
 
@@ -175,14 +177,17 @@ public class CustomMainMenuScene extends FXGLMenu {
             Preferences prefs = Preferences.userNodeForPackage(SaellyApp.class);
             double currentVol = FXGL.getSettings().getGlobalMusicVolume();
 
-            if (currentVol > 0) {
+            if (currentVol > 0)
+            {
 
                 this.lastMusicVol = currentVol;
                 this.lastSoundVol = FXGL.getSettings().getGlobalSoundVolume();
 
                 FXGL.getSettings().setGlobalMusicVolume(0.0);
                 FXGL.getSettings().setGlobalSoundVolume(0.0);
-            } else {
+            }
+            else
+            {
                 if (this.lastMusicVol <= 0.0) this.lastMusicVol = Settings.getDefaultRestoreMusicVolume();
                 if (this.lastSoundVol <= 0.0) this.lastSoundVol = Settings.getDefaultRestoreSoundVolume();
 
@@ -194,10 +199,14 @@ public class CustomMainMenuScene extends FXGLMenu {
             }
         });
 
-        FXGL.getSettings().globalMusicVolumeProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.doubleValue() > 0) {
+        FXGL.getSettings().globalMusicVolumeProperty().addListener((obs, oldVal, newVal) ->
+        {
+            if (newVal.doubleValue() > 0)
+            {
                 btnMute.setGraphic(soundOnIcon);
-            } else {
+            }
+            else
+            {
                 btnMute.setGraphic(soundOffIcon);
             }
         });
@@ -224,7 +233,15 @@ public class CustomMainMenuScene extends FXGLMenu {
         Button btnNewGame = new Button();
         btnNewGame.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnNewGame.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuNewGame()));
-        btnNewGame.setOnAction(e -> fireNewGame());
+        btnNewGame.setOnAction(e ->
+        {
+            if (app != null)
+            {
+                app.setGameUIVisibility(true);
+                app.playGameMusic();
+            }
+            fireNewGame();
+        });
 
         Button btnOptions = new Button();
         btnOptions.getStyleClass().add(Settings.getCssClassMagicalBtn());
@@ -238,7 +255,7 @@ public class CustomMainMenuScene extends FXGLMenu {
         btnCredits.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnCredits.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuCredits()));
 
-        Button btnExit = new Button();
+        btnExit = new Button();
         btnExit.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnExit.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuExit()));
 
@@ -285,7 +302,8 @@ public class CustomMainMenuScene extends FXGLMenu {
         Runnable updateModeText = () ->
         {
             String modeI18nKey = "";
-            switch (currentWindowMode) {
+            switch (currentWindowMode)
+            {
                 case WINDOWED:
                     modeI18nKey = Settings.getLangKeyMenuWindowed();
                     break;
@@ -551,6 +569,7 @@ public class CustomMainMenuScene extends FXGLMenu {
 
         btnExit.setOnAction(e ->
         {
+            e.consume();
             menuBox.setVisible(false);
             exitBox.setVisible(true);
         });
@@ -578,18 +597,25 @@ public class CustomMainMenuScene extends FXGLMenu {
         getContentRoot().getChildren().addAll(backgroundImage, dimOverlay, bg);
 
         //esc-listener
-        getContentRoot().sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null) {
+        getContentRoot().sceneProperty().addListener((obs, oldScene, newScene) ->
+        {
+            if (newScene != null)
+            {
                 newScene.addEventFilter(KeyEvent.KEY_PRESSED, e ->
                 {
-                    if (e.getCode() == KeyCode.ESCAPE) {
+                    if (e.getCode() == KeyCode.ESCAPE)
+                    {
                         boolean handled = handleEscapeBack();
 
-                        if (!handled) {
-                            if (exitBox.isVisible()) {
+                        if (!handled)
+                        {
+                            if (exitBox.isVisible())
+                            {
                                 exitBox.setVisible(false);
                                 menuBox.setVisible(true);
-                            } else {
+                            }
+                            else
+                            {
                                 menuBox.setVisible(false);
                                 exitBox.setVisible(true);
                             }
@@ -601,52 +627,64 @@ public class CustomMainMenuScene extends FXGLMenu {
         });
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        try {
-            FXGL.getAudioPlayer().loopMusic(FXGL.getAssetLoader().loadMusic(Settings.getLinkToMenuMusic()));
-        } catch (Exception e) {
-            System.err.println(Settings.getErrMsgMainMenuMusic());
-        }
+    public void activateMainMenu()
+    {
+        SaellyApp app = (SaellyApp) FXGL.getAppCast();
+            app.setGameUIVisibility(false);
+            app.playMainMenuMusic();
 
-        if (!hasCheckedCorruption) {
-            hasCheckedCorruption = true;
-            SaellyApp app = (SaellyApp) FXGL.getAppCast();
-            if (app.getHighscoreL() != null && app.getHighscoreL().isFileCorruptedAndRestored()) {
-                menuBox.setVisible(false);
-                corruptedBox.setVisible(true);
+            if (!hasCheckedCorruption)
+            {
+                hasCheckedCorruption = true;
+                if (app.getHighscoreL() != null && app.getHighscoreL().isFileCorruptedAndRestored())
+                {
+                    menuBox.setVisible(false);
+                    corruptedBox.setVisible(true);
+                }
             }
-        }
     }
 
-    private void playClickSound() {
-        try {
+
+    private void playClickSound()
+    {
+        try
+        {
             FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToClickSound()));
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             System.err.println(Settings.getErrMsgButtonClickSound() + e.getMessage());
         }
     }
 
-    private void playTickSound() {
-        try {
+    private void playTickSound()
+    {
+        try
+        {
             FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToButtonTickSound()));
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             System.err.println(Settings.getErrMsgButtonTickSound() + e.getMessage());
         }
     }
 
-    private void refreshLeaderboard(VBox container, SaellyApp app) {
+    private void refreshLeaderboard(VBox container, SaellyApp app)
+    {
         container.getChildren().clear();
         List<ScoreEntry> scores = app.getHighscoreList();
 
-        if (scores == null || scores.isEmpty()) {
+        if (scores == null || scores.isEmpty())
+        {
             Text noEntries = new Text();
             noEntries.getStyleClass().add(Settings.getCssClassMagicalText());
             noEntries.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuNoEntries()));
             container.getChildren().add(noEntries);
-        } else {
-            for (int i = 0; i < scores.size(); i++) {
+        }
+        else
+        {
+            for (int i = 0; i < scores.size(); i++)
+            {
                 ScoreEntry entry = scores.get(i);
                 String formattedText = String.format(Settings.getFormatLeaderboardEntry(), (i + 1), entry.getName(), entry.getScore());
                 Text entryText = new Text();
@@ -657,28 +695,63 @@ public class CustomMainMenuScene extends FXGLMenu {
         }
     }
 
-    protected boolean handleEscapeBack() {
-        if (controlsBox.isVisible()) {
+    @Override
+    public void onEnteredFrom(Scene prevState)
+    {
+        super.onEnteredFrom(prevState);
+
+        if (btnExit != null)
+        {
+            btnExit.setDisable(true);
+            PauseTransition shield = new PauseTransition(Duration.millis(100));
+            shield.setOnFinished(ev -> btnExit.setDisable(false));
+            shield.play();
+        }
+
+        if (menuBox != null) menuBox.setVisible(true);
+        if (exitBox != null) exitBox.setVisible(false);
+        if (optionsBox != null) optionsBox.setVisible(false);
+        if (controlsBox != null) controlsBox.setVisible(false);
+        if (languagesBox != null) languagesBox.setVisible(false);
+        if (leaderboardBox != null) leaderboardBox.setVisible(false);
+        if (creditsBox != null) creditsBox.setVisible(false);
+        if (corruptedBox != null) corruptedBox.setVisible(false);
+    }
+
+    protected boolean handleEscapeBack()
+    {
+        if (controlsBox.isVisible())
+        {
             controlsBox.setVisible(false);
             optionsBox.setVisible(true);
             return true;
-        } else if (languagesBox.isVisible()) {
+        }
+        else if (languagesBox.isVisible())
+        {
             languagesBox.setVisible(false);
             optionsBox.setVisible(true);
             return true;
-        } else if (leaderboardBox.isVisible()) {
+        }
+        else if (leaderboardBox.isVisible())
+        {
             leaderboardBox.setVisible(false);
             menuBox.setVisible(true);
             return true;
-        } else if (optionsBox.isVisible()) {
+        }
+        else if (optionsBox.isVisible())
+        {
             optionsBox.setVisible(false);
             menuBox.setVisible(true);
             return true;
-        } else if (creditsBox.isVisible()) {
+        }
+        else if (creditsBox.isVisible())
+        {
             creditsBox.setVisible(false);
             menuBox.setVisible(true);
             return true;
-        } else if (exitBox.isVisible()) {
+        }
+        else if (exitBox.isVisible())
+        {
             exitBox.setVisible(false);
             menuBox.setVisible(true);
             return true;
@@ -686,14 +759,16 @@ public class CustomMainMenuScene extends FXGLMenu {
         return false;
     }
 
-    private void playScaleAnim(Button btn, double scaleTo, double durationMs) {
+    private void playScaleAnim(Button btn, double scaleTo, double durationMs)
+    {
         ScaleTransition st = new ScaleTransition(Duration.millis(durationMs), btn);
         st.setToX(scaleTo);
         st.setToY(scaleTo);
         st.play();
     }
 
-    private void selectLanguage(Language lang) {
+    private void selectLanguage(Language lang)
+    {
         currentLanguage = lang;
         FXGL.getLocalizationService().selectedLanguageProperty().unbind();
         FXGL.getLocalizationService().selectedLanguageProperty().set(currentLanguage);
@@ -702,15 +777,18 @@ public class CustomMainMenuScene extends FXGLMenu {
         prefs.put(Settings.getPrefsKeyLanguage(), currentLanguage.getName());
     }
 
-    private void cycleWindowMode() {
+    private void cycleWindowMode()
+    {
         WindowMode[] modes = WindowMode.values();
         int nextIndex = (currentWindowMode.ordinal() + 1) % modes.length;
         currentWindowMode = modes[nextIndex];
         applyWindowMode(currentWindowMode);
     }
 
-    private void applyWindowMode(WindowMode mode) {
-        switch (mode) {
+    private void applyWindowMode(WindowMode mode)
+    {
+        switch (mode)
+        {
             case FULLSCREEN:
                 FXGL.getPrimaryStage().setFullScreen(true);
                 break;
@@ -731,7 +809,8 @@ public class CustomMainMenuScene extends FXGLMenu {
         }
     }
 
-    private HBox createKeybindRow(String langKey, String actionName, String defaultKeyName) {
+    private HBox createKeybindRow(String langKey, String actionName, String defaultKeyName)
+    {
         Text label = new Text();
         label.getStyleClass().add(Settings.getCssClassMagicalText());
         label.textProperty().bind(FXGL.localizedStringProperty(langKey));
@@ -740,7 +819,8 @@ public class CustomMainMenuScene extends FXGLMenu {
         Button btnKey = new Button();
         btnKey.getStyleClass().add(Settings.getCssClassMagicalBtn());
 
-        Runnable updateBtnText = () -> {
+        Runnable updateBtnText = () ->
+        {
             String currentKey = prefs.get(Settings.getPrefsKeyBindingPrefix() + actionName, defaultKeyName);
             String displayKey = currentKey;
 
@@ -761,12 +841,15 @@ public class CustomMainMenuScene extends FXGLMenu {
             btnKey.setText(FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyMenuWaiting()));
             btnKey.getStyleClass().add(Settings.getCssClassBtnWaiting());
 
-            EventHandler<KeyEvent> keyListener = new EventHandler<>() {
+            EventHandler<KeyEvent> keyListener = new EventHandler<>()
+            {
                 @Override
-                public void handle(KeyEvent event) {
+                public void handle(KeyEvent event)
+                {
                     KeyCode newKey = event.getCode();
 
-                    if (newKey == KeyCode.ESCAPE) {
+                    if (newKey == KeyCode.ESCAPE)
+                    {
                         updateBtnText.run();
                         btnKey.getStyleClass().remove(Settings.getCssClassBtnWaiting());
                         getContentRoot().getScene().removeEventFilter(KeyEvent.KEY_PRESSED, this);

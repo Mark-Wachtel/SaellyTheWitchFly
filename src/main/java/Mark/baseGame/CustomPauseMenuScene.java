@@ -7,6 +7,7 @@ import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.localization.Language;
 import com.almasb.fxgl.texture.Texture;
 import javafx.animation.Animation;
+import javafx.animation.PauseTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
@@ -32,6 +33,8 @@ import java.util.prefs.Preferences;
 
 public class CustomPauseMenuScene extends FXGLMenu {
 
+    private final SaellyApp APP = (SaellyApp) FXGL.getAppCast();
+
     private WindowMode currentWindowMode = WindowMode.WINDOWED;
     private Language currentLanguage;
 
@@ -43,15 +46,19 @@ public class CustomPauseMenuScene extends FXGLMenu {
     private final VBox creditsBox;
     private final VBox exitBox;
 
-    public CustomPauseMenuScene() {
+    public CustomPauseMenuScene()
+    {
         super(MenuType.GAME_MENU);
 
         Preferences preferences = Preferences.userNodeForPackage(SaellyApp.class);
         String savedLang = preferences.get(Settings.getPrefsKeyLanguage(), Settings.getLangGerman());
 
-        if (savedLang.equals(Settings.getLangEnglish())) {
+        if (savedLang.equals(Settings.getLangEnglish()))
+        {
             currentLanguage = Language.ENGLISH;
-        } else {
+        }
+        else
+        {
             currentLanguage = Language.GERMAN;
         }
 
@@ -92,14 +99,14 @@ public class CustomPauseMenuScene extends FXGLMenu {
         Text gameVersion = FXGL.getUIFactoryService().newText("", Color.GREEN, Settings.getFontSizeVersion());
         gameVersion.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyServerVersion()).concat(" ").concat(FXGL.getSettings().getVersion()));
 
-        SaellyApp app = (SaellyApp) FXGL.getAppCast();
-        app.serverOnlineProperty().addListener((obs, oldVal, isOnline) -> {
+        APP.serverOnlineProperty().addListener((obs, oldVal, isOnline) ->
+        {
             Color currentColor = isOnline ? Settings.getColorServerOnline() : Settings.getColorServerOffline();
             statusIndicator.setFill(currentColor);
             gameVersion.setFill(currentColor);
         });
 
-        Color initColor = app.serverOnlineProperty().get() ? Settings.getColorServerOnline() : Settings.getColorServerOffline();
+        Color initColor = APP.serverOnlineProperty().get() ? Settings.getColorServerOnline() : Settings.getColorServerOffline();
         statusIndicator.setFill(initColor);
         gameVersion.setFill(initColor);
 
@@ -120,12 +127,16 @@ public class CustomPauseMenuScene extends FXGLMenu {
         btnMute.getStyleClass().add(Settings.getCssClassMuteBtn());
         btnMute.setFocusTraversable(false);
 
-        btnMute.setOnAction(e -> app.toggleMuteFromMenu());
+        btnMute.setOnAction(e -> APP.toggleMuteFromMenu());
 
-        FXGL.getSettings().globalMusicVolumeProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.doubleValue() > 0) {
+        FXGL.getSettings().globalMusicVolumeProperty().addListener((obs, oldVal, newVal) ->
+        {
+            if (newVal.doubleValue() > 0)
+            {
                 btnMute.setGraphic(soundOnIcon);
-            } else {
+            }
+            else
+            {
                 btnMute.setGraphic(soundOffIcon);
             }
         });
@@ -148,11 +159,6 @@ public class CustomPauseMenuScene extends FXGLMenu {
         menuBox = new VBox(Settings.getMenuBoxSpacing());
         menuBox.setAlignment(Pos.CENTER);
 
-        Button btnResume = new Button();
-        btnResume.getStyleClass().add(Settings.getCssClassMagicalBtn());
-        btnResume.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuResume()));
-        btnResume.setOnAction(e -> fireResume());
-
         Button btnOptions = new Button();
         btnOptions.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnOptions.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuOptions()));
@@ -168,7 +174,30 @@ public class CustomPauseMenuScene extends FXGLMenu {
         Button btnMainMenu = new Button();
         btnMainMenu.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnMainMenu.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuMainmenu()));
-        btnMainMenu.setOnAction(e -> FXGL.getGameController().gotoMainMenu());
+        btnMainMenu.setOnMousePressed(e ->
+        {
+            e.consume();
+
+            APP.stopAllMusic();
+            APP.setGameUIVisibility(false);
+            CustomMainMenuScene mainMenu = (CustomMainMenuScene) FXGL.getSceneService().getMainMenuScene().get();
+            mainMenu.activateMainMenu();
+
+            PauseTransition delay = new PauseTransition(Duration.millis(100));
+            delay.setOnFinished(event -> FXGL.getGameController().gotoMainMenu());
+            delay.play();
+        });
+
+        Button btnResume = new Button();
+        btnResume.getStyleClass().add(Settings.getCssClassMagicalBtn());
+        btnResume.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuResume()));
+        btnResume.setOnAction(e ->
+        {
+            APP.setGameUIVisibility(true);
+            APP.playGameMusic();
+
+            fireResume();
+        });
 
         Button btnExit = new Button();
         btnExit.getStyleClass().add(Settings.getCssClassMagicalBtn());
@@ -216,18 +245,12 @@ public class CustomPauseMenuScene extends FXGLMenu {
         btnWindowMode.getStyleClass().add(Settings.getCssClassMagicalBtn());
         Runnable updateModeText = () ->
         {
-            String modeI18nKey = "";
-            switch (currentWindowMode) {
-                case WINDOWED:
-                    modeI18nKey = Settings.getLangKeyMenuWindowed();
-                    break;
-                case BORDERLESS:
-                    modeI18nKey = Settings.getLangKeyMenuBorderless();
-                    break;
-                case FULLSCREEN:
-                    modeI18nKey = Settings.getLangKeyMenuFullscreen();
-                    break;
-            }
+            String modeI18nKey = switch (currentWindowMode)
+            {
+                case WINDOWED -> Settings.getLangKeyMenuWindowed();
+                case BORDERLESS -> Settings.getLangKeyMenuBorderless();
+                case FULLSCREEN -> Settings.getLangKeyMenuFullscreen();
+            };
 
             String label = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyMenuMode());
             String value = FXGL.getLocalizationService().getLocalizedString(modeI18nKey);
@@ -440,7 +463,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
 
         btnLeaderboard.setOnAction(e ->
         {
-            refreshLeaderboard(leaderboardContent, app);
+            refreshLeaderboard(leaderboardContent, APP);
             menuBox.setVisible(false);
             leaderboardBox.setVisible(true);
         });
@@ -477,17 +500,22 @@ public class CustomPauseMenuScene extends FXGLMenu {
         getContentRoot().getChildren().add(bg);
     }
 
-    private void refreshLeaderboard(VBox container, SaellyApp app) {
+    private void refreshLeaderboard(VBox container, SaellyApp app)
+    {
         container.getChildren().clear();
         List<ScoreEntry> scores = app.getHighscoreList();
 
-        if (scores == null || scores.isEmpty()) {
+        if (scores == null || scores.isEmpty())
+        {
             Text noEntries = new Text();
             noEntries.getStyleClass().add(Settings.getCssClassMagicalText());
             noEntries.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuNoEntries()));
             container.getChildren().add(noEntries);
-        } else {
-            for (int i = 0; i < scores.size(); i++) {
+        }
+        else
+        {
+            for (int i = 0; i < scores.size(); i++)
+            {
                 ScoreEntry entry = scores.get(i);
                 String formattedText = String.format(Settings.getFormatLeaderboardEntry(), (i + 1), entry.getName(), entry.getScore());
                 Text entryText = new Text();
@@ -498,28 +526,40 @@ public class CustomPauseMenuScene extends FXGLMenu {
         }
     }
 
-    public boolean handleEscapeBack() {
-        if (controlsBox.isVisible()) {
+    public boolean handleEscapeBack()
+    {
+        if (controlsBox.isVisible())
+        {
             controlsBox.setVisible(false);
             optionsBox.setVisible(true);
             return true;
-        } else if (languagesBox.isVisible()) {
+        }
+        else if (languagesBox.isVisible())
+        {
             languagesBox.setVisible(false);
             optionsBox.setVisible(true);
             return true;
-        } else if (leaderboardBox.isVisible()) {
+        }
+        else if (leaderboardBox.isVisible())
+        {
             leaderboardBox.setVisible(false);
             menuBox.setVisible(true);
             return true;
-        } else if (optionsBox.isVisible()) {
+        }
+        else if (optionsBox.isVisible())
+        {
             optionsBox.setVisible(false);
             menuBox.setVisible(true);
             return true;
-        } else if (creditsBox.isVisible()) {
+        }
+        else if (creditsBox.isVisible())
+        {
             creditsBox.setVisible(false);
             menuBox.setVisible(true);
             return true;
-        } else if (exitBox.isVisible()) {
+        }
+        else if (exitBox.isVisible())
+        {
             exitBox.setVisible(false);
             menuBox.setVisible(true);
             return true;
@@ -527,14 +567,16 @@ public class CustomPauseMenuScene extends FXGLMenu {
         return false;
     }
 
-    private void playScaleAnim(Button btn, double scaleTo, double durationMs) {
+    private void playScaleAnim(Button btn, double scaleTo, double durationMs)
+    {
         ScaleTransition st = new ScaleTransition(Duration.millis(durationMs), btn);
         st.setToX(scaleTo);
         st.setToY(scaleTo);
         st.play();
     }
 
-    private void selectLanguage(Language lang) {
+    private void selectLanguage(Language lang)
+    {
         currentLanguage = lang;
         FXGL.getLocalizationService().selectedLanguageProperty().unbind();
         FXGL.getLocalizationService().selectedLanguageProperty().set(currentLanguage);
@@ -543,15 +585,18 @@ public class CustomPauseMenuScene extends FXGLMenu {
         prefs.put(Settings.getPrefsKeyLanguage(), currentLanguage.getName());
     }
 
-    private void cycleWindowMode() {
+    private void cycleWindowMode()
+    {
         WindowMode[] modes = WindowMode.values();
         int nextIndex = (currentWindowMode.ordinal() + 1) % modes.length;
         currentWindowMode = modes[nextIndex];
         applyWindowMode(currentWindowMode);
     }
 
-    private void applyWindowMode(WindowMode mode) {
-        switch (mode) {
+    private void applyWindowMode(WindowMode mode)
+    {
+        switch (mode)
+        {
             case FULLSCREEN:
                 FXGL.getPrimaryStage().setFullScreen(true);
                 break;
@@ -639,4 +684,14 @@ public class CustomPauseMenuScene extends FXGLMenu {
         row.setAlignment(Pos.CENTER);
         return row;
     }
+
+    public void activatePauseMenu()
+    {
+        if (APP != null)
+        {
+            APP.setGameUIVisibility(false);
+            APP.playPauseMenuMusic();
+        }
+    }
+
 }

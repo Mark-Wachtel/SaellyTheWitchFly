@@ -28,13 +28,13 @@ import javafx.animation.KeyFrame;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.*;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -112,15 +112,13 @@ public class SaellyApp extends GameApplication {
 	private HBox updatedBox;
 	private HBox topBar;
 	private SimpleBooleanProperty serverOnlineProp = new SimpleBooleanProperty(true);
+	private boolean isSwitchingScene = false;
 
 	//Testliste
 	private List<ScoreEntry> highscoreList = new ArrayList<>();
 
-	
-	//Java Entry.
     public static void main(String[] args) 
     {
-    	
         launch(args);
     }
 
@@ -138,15 +136,18 @@ public class SaellyApp extends GameApplication {
 		if (gameVersion != null && !gameVersion.isVisible()) gameVersion.setVisible(true);
 		if (statusIndicator != null && !statusIndicator.isVisible()) statusIndicator.setVisible(true);
 
-		if (!getb(Settings.getKeyIsGameOver())) {
+		if (!getb(Settings.getKeyIsGameOver()))
+		{
 			if (topBar != null && !topBar.isVisible()) topBar.setVisible(true);
 
-			if (getb(Settings.getKeyGameStarted())) {
+			if (getb(Settings.getKeyGameStarted()))
+			{
 
 				double slowMoFactor = getd(Settings.getKeyBarrierSpeed()) / Settings.getBarrierSpeed();
 				barrierTimer += tpf * slowMoFactor;
 
-				if (barrierTimer >= Settings.getSpawnDurationBarrier()) {
+				if (barrierTimer >= Settings.getSpawnDurationBarrier())
+				{
 					barrierTimer = 0;
 
 					double barrierY = FXGLMath.random(Settings.getMinSpawnHeightBarrier(), Settings.getMaxSpawnHeightBarrier());
@@ -166,21 +167,24 @@ public class SaellyApp extends GameApplication {
 							.with(new ObstacleComponent())
 							.buildAndAttach();
 
-					boolean shouldSpawnPowerup = FXGLMath.randomBoolean(Settings.getPowerupSpawnChance()); //Chance in settings!!
+					boolean shouldSpawnPowerup = FXGLMath.randomBoolean(Settings.getPowerupSpawnChance());
 
-					if (!getb(Settings.getKeyIsBuffActive()) && shouldSpawnPowerup) {
+					if (!getb(Settings.getKeyIsBuffActive()) && shouldSpawnPowerup)
+					{
 
 						BuffPowerupComponent.Type[] types = BuffPowerupComponent.Type.values();
 						BuffPowerupComponent.Type randomType = types[FXGLMath.random(0, types.length - 1)];
 
-						String textureName = switch (randomType) {
+						String textureName = switch (randomType)
+						{
 							case SLOW_MOTION -> Settings.getLinkToSlowMotionImage();
 							case SCORE_X10 -> Settings.getLinkToScorex10Image();
 							case INVULNERABILITY -> Settings.getLinkToInvulnerableImage();
 							case EXTRA_LIFE -> Settings.getLinkToExtraLivesImage();
 						};
 
-						var scaledBuffTexture = switch (textureName) {
+						var scaledBuffTexture = switch (textureName)
+						{
 							case "powerups/slowMotion.png" -> texture(textureName, Settings.getSlowMotionImageWidth(), Settings.getSlowMotionImageHeight());
 							case "powerups/x10Score.png" -> texture(textureName, Settings.getScoreX10ImageWidth(), Settings.getScoreX10ImageHeight());
 							case "powerups/invulnerable.png" -> texture(textureName, Settings.getInvulnerableImageWidth(), Settings.getInvulnerableImageHeight());
@@ -191,7 +195,8 @@ public class SaellyApp extends GameApplication {
 						double padding = scaledBuffTexture.getHeight() * 0.5;
 						double spawnY = newBarrier.getBottomY() + padding;
 
-						if (spawnY + scaledBuffTexture.getHeight() > Settings.getStandardWindowHeightWithoutTitlebar()) {
+						if (spawnY + scaledBuffTexture.getHeight() > Settings.getStandardWindowHeightWithoutTitlebar())
+						{
 							spawnY = newBarrier.getY() - scaledBuffTexture.getHeight() - padding;
 						}
 
@@ -223,14 +228,13 @@ public class SaellyApp extends GameApplication {
 		{
 			langToSet = Language.GERMAN;
 		}
+
 		settings.setDefaultLanguage(langToSet);
-
-
 
 		settings.setWidth(Settings.getStandardWindowWidth());
         settings.setHeight(Settings.getStandardWindowHeight());
         settings.setTitle(Settings.getWindowTitle());
-		settings.setSceneFactory(new SceneFactory());
+		settings.setSceneFactory(new CustomSceneFactory());
 		settings.setVersion(Settings.getGameVersion());
 		settings.setAppIcon(Settings.getLinkToUiAppicon());
 		settings.setFontUI(Settings.getLinkToFontEagle());
@@ -243,8 +247,6 @@ public class SaellyApp extends GameApplication {
 		settings.setIntroEnabled(true);
 		settings.setMainMenuEnabled(true);
 		settings.setMenuKey(KeyCode.F24);
-
-
 
 	}
 
@@ -296,6 +298,7 @@ public class SaellyApp extends GameApplication {
 		highscoreL.load();
 
 		highscoreL.pingServer(this::updateServerStatusUI);
+		playMainMenuMusic();
 
 	}
 	//All stuff thats needed to load before the game starts. 
@@ -306,12 +309,6 @@ public class SaellyApp extends GameApplication {
 		set(Settings.getKeyIsGameOver(), false);
 		set(Settings.getKeyIsCrashing(), false);
 
-		if (gameOverMusic != null) getAudioPlayer().stopMusic(gameOverMusic);
-		if (menuMusic != null) getAudioPlayer().stopMusic(menuMusic);
-		if (backgroundMusic != null) getAudioPlayer().stopMusic(backgroundMusic);
-
-		getAudioPlayer().loopMusic(backgroundMusic);
-
 		double offsetX = (Settings.getInitPlayerScaleWidth()-Settings.getPlayerCollisionBoxWidth()) / 2.0;
 		double offsetY = (Settings.getInitPlayerScaleHeight()-Settings.getPlayerCollisionBoxHeight()) / 2.0;
 
@@ -321,40 +318,54 @@ public class SaellyApp extends GameApplication {
 		entityBuilder().at(0,Settings.getStandardTitlebarHeight()).view(bgView).zIndex(-1).buildAndAttach();
 		startHeartbeat();
 
-		getGameWorld().addWorldListener(new EntityWorldListener() {
+		getGameWorld().addWorldListener(new EntityWorldListener()
+		{
 			@Override
-			public void onEntityAdded(Entity entity) {
-				if (entity.getBoundingBoxComponent() != null) {
-					if (!entity.hasComponent(HitboxDebuggerComponent.class)) {
-						entity.addComponent(new HitboxDebuggerComponent());
-					}
-				}
+			public void onEntityAdded(Entity entity)
+			{
+				if (entity.getBoundingBoxComponent() != null && !entity.hasComponent(HitboxDebuggerComponent.class)) entity.addComponent(new HitboxDebuggerComponent());
 			}
 
 			@Override
-			public void onEntityRemoved(Entity entity) {
-				//remove läuft bereits über die Component Klasse selber
+			public void onEntityRemoved(Entity entity)
+			{
+				//remove over component class
 			}
 		});
 
-		getGameWorld().getEntities().forEach(f -> {
-			if (f.getType() == EntityType.PLAYER || f.getType() == EntityType.BARRIER || f.getType() == EntityType.BUFF_POWERUP) {
-				if (!f.hasComponent(HitboxDebuggerComponent.class)) {
-					f.addComponent(new HitboxDebuggerComponent());
-				}
+		getGameWorld().getEntities().forEach(f ->
+		{
+			if (f.getType() == EntityType.PLAYER || f.getType() == EntityType.BARRIER || f.getType() == EntityType.BUFF_POWERUP)
+			{
+				if (!f.hasComponent(HitboxDebuggerComponent.class)) f.addComponent(new HitboxDebuggerComponent());
 			}
 		});
 
+		FXGL.getWorldProperties().intProperty(Settings.getKeyScore()).addListener((obs, oldScore, newScore) ->
+		{
+			int nextSpeedupTarget = FXGL.geti("nextSpeedupScore");
+
+			if (newScore.intValue() >= nextSpeedupTarget)
+			{
+				FXGL.inc(Settings.getKeyGeneralSpeed(), Settings.getGameSpeed());
+				FXGL.inc(Settings.getKeyBarrierSpeed(), Settings.getGameSpeed());
+
+				int updatedTarget = nextSpeedupTarget + Settings.getBarriersToSpeedupTheGame();
+				FXGL.set("nextSpeedupScore", updatedTarget);
+			}
+		});
 	}
 
 	@Override
 	protected void initPhysics()
 	{
 		getPhysicsWorld().setGravity(0,Settings.getGravity());
-		getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.PLAYER, EntityType.BARRIER) {
+		getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.PLAYER, EntityType.BARRIER)
+		{
 			@Override
-			protected void onCollisionBegin(Entity player, Entity barrier) {
-				if (getb(Settings.getKeyIsInvulnerable()))return;
+			protected void onCollisionBegin(Entity player, Entity barrier)
+			{
+				if (getb(Settings.getKeyIsInvulnerable())) return;
 
 				if (player.hasComponent(HitboxDebuggerComponent.class)) player.getComponent(HitboxDebuggerComponent.class).setColliding(true);
 
@@ -370,22 +381,19 @@ public class SaellyApp extends GameApplication {
 				{
 					double effectW = Settings.getCrashEffectTargetWidth();
 					double effectH = Settings.getCrashEffectTargetHeight();
-					javafx.geometry.Point2D center = player.getCenter();
+					Point2D center = player.getCenter();
 					double spawnX = center.getX() - (effectW / 2.0) + Settings.getCrashEffectOffsetX();
 					double spawnY = center.getY() - (effectH / 2.0) + Settings.getCrashEffectOffsetY();
 
 					player.removeFromWorld();
-					entityBuilder()
-							.at(spawnX, spawnY)
-							.zIndex(100)
-							.with(new EffectComponent(EffectComponent.EffectType.CRASH))
-							.buildAndAttach();
+					entityBuilder().at(spawnX, spawnY).zIndex(100).with(new EffectComponent(EffectComponent.EffectType.CRASH)).buildAndAttach();
 					gameOver();
 				}
 			}
 		});
 
-				getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.PLAYER, EntityType.BUFF_POWERUP) {
+				getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.PLAYER, EntityType.BUFF_POWERUP)
+				{
 				@Override
 					protected void onCollisionBegin(Entity player, Entity buffPowerup)
 				{
@@ -394,18 +402,15 @@ public class SaellyApp extends GameApplication {
 
 					double effectW = Settings.getPickupEffectTargetWidth();
 					double effectH = Settings.getPickupEffectTargetHeight();
-					javafx.geometry.Point2D center = player.getCenter();
+					Point2D center = player.getCenter();
 					double spawnX = center.getX() - (effectW / 2.0) + Settings.getPickupEffectOffsetX();
 					double spawnY = center.getY() - (effectH / 2.0) + Settings.getPickupEffectOffsetY();
 
-					entityBuilder()
-							.at(spawnX, spawnY)
-							.zIndex(100)
-							.with(new EffectComponent(EffectComponent.EffectType.PICKUP))
-							.buildAndAttach();
+					entityBuilder().at(spawnX, spawnY).zIndex(100).with(new EffectComponent(EffectComponent.EffectType.PICKUP)).buildAndAttach();
 
 					var type = comp.getType();
-					double buffDuration = switch (type) {
+					double buffDuration = switch (type)
+					{
 						case INVULNERABILITY -> Settings.getInvulnerableDurationInSeconds();
 						case SLOW_MOTION -> Settings.getSlowMotionBuffPowerupDurationSeconds();
 						case SCORE_X10 -> Settings.getScoreX10DurationSeconds();
@@ -416,17 +421,17 @@ public class SaellyApp extends GameApplication {
 					{
 						player.addComponent(new ActiveBuffComponent(type));
 
-						getGameTimer().runOnceAfter(()->{
-							if (player.hasComponent(ActiveBuffComponent.class)) {
+						getGameTimer().runOnceAfter(()->
+						{
+							if (player.hasComponent(ActiveBuffComponent.class))
+							{
 								player.removeComponent(ActiveBuffComponent.class);
 							}
 						}, Duration.seconds(buffDuration));
 					}
-
 					buffPowerup.removeFromWorld();
 				}
 				});
-
 	}
 	
 	@Override
@@ -434,10 +439,13 @@ public class SaellyApp extends GameApplication {
 	{
 
 		//css loading
-		try {
+		try
+		{
 			String css = getClass().getResource(Settings.getLinkToCss()).toExternalForm();
 			getGameScene().getRoot().getStylesheets().add(css);
-		} catch (NullPointerException e) {
+		}
+		catch (NullPointerException e)
+		{
 			System.err.println(Settings.getMsgErrCssMain() + Settings.getLinkToCss());
 		}
 
@@ -447,10 +455,18 @@ public class SaellyApp extends GameApplication {
 		getGameScene().getRoot().addEventFilter(MouseEvent.MOUSE_PRESSED, e ->
 		{
 			Node target = (Node) e.getTarget();
-			while (target != null) {
+			while (target != null)
+			{
 				if (target instanceof Button)
 				{
-					try { FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToClickSound())); } catch (Exception ex) {}
+					try
+					{
+						FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToClickSound()));
+					}
+					catch (Exception ex)
+					{
+
+					}
 					break;
 				}
 				target = target.getParent();
@@ -474,7 +490,14 @@ public class SaellyApp extends GameApplication {
 
 			if (currentHover != null && currentHover != lastHoveredInGame[0])
 			{
-				try { FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToButtonTickSound())); } catch (Exception ex) {}
+				try
+				{
+					FXGL.getAudioPlayer().playSound(FXGL.getAssetLoader().loadSound(Settings.getLinkToButtonTickSound()));
+				}
+				catch (Exception ex)
+				{
+
+				}
 				lastHoveredInGame[0] = currentHover;
 			}
 			else if (currentHover == null)
@@ -506,7 +529,8 @@ public class SaellyApp extends GameApplication {
 				}
 
 				Parent fxglRoot = getFxglGameRootSafely();
-				if (fxglRoot == null){
+				if (fxglRoot == null)
+				{
 					System.err.println(Settings.getMsgErrRoot());
 					return;
 				}
@@ -523,6 +547,7 @@ public class SaellyApp extends GameApplication {
 				{
 					if (event.getCode() == KeyCode.ESCAPE)
 					{
+						if (isSwitchingScene) return;
 						event.consume();
 						if (isFetchingData) return;
 
@@ -532,11 +557,14 @@ public class SaellyApp extends GameApplication {
 
 						if (isGameScene)
 						{
+							isSwitchingScene = true;
 							if (muteButton != null) muteButton.setVisible(false);
 							if (gameVersion != null) gameVersion.setVisible(false);
 							if (statusIndicator != null) statusIndicator.setVisible(false);
 							if (topBar != null) topBar.setVisible(false);
+							playPauseMenuMusic();
 							getGameController().gotoGameMenu();
+							isSwitchingScene = false;
 						}
 						else if (isMenuScene)
 						{
@@ -548,7 +576,10 @@ public class SaellyApp extends GameApplication {
 									return;
 								}
 							}
+							isSwitchingScene = true;
+							playGameMusic();
 							getGameController().gotoPlay();
+							isSwitchingScene = false;
 						}
 					}
 				});
@@ -565,7 +596,10 @@ public class SaellyApp extends GameApplication {
 				titleBar.setViewOrder(Settings.getViewOrderTitlebar());
 				getGameScene().getRoot().getChildren().add(titleBar);
 
-				exitCoordinator = new ExitCoordinator(this::safeBeforeExit, () -> {getGameController().exit();});
+				exitCoordinator = new ExitCoordinator(() ->
+				{
+					getGameController().exit();
+				});
 
 				titleBar.setOnLogoClicked(() ->
 				{
@@ -596,42 +630,7 @@ public class SaellyApp extends GameApplication {
 
 				windowManager.initAndApplyStartupMode(WindowMode.WINDOWED);
 
-				getSceneService().getGameMenuScene().ifPresent(menuScene ->
-				{
-					menuScene.getRoot().sceneProperty().addListener((obs, oldScene,newScene)->{
-						if (newScene != null)
-						{
-							if (muteButton != null) muteButton.setVisible(false);
-							if (gameVersion != null) gameVersion.setVisible(false);
-							if (statusIndicator != null) statusIndicator.setVisible(false);
-							if (topBar != null) topBar.setVisible(false);
 
-							if (getb(Settings.getKeyIsGameOver()))
-							{
-								if (gameOverMusic != null) getAudioPlayer().pauseMusic(gameOverMusic);
-							}
-							else
-							{
-								if (backgroundMusic != null) getAudioPlayer().pauseMusic(backgroundMusic);
-							}
-
-							if (menuMusic != null) getAudioPlayer().loopMusic(menuMusic);
-						}
-						else
-						{
-							if (menuMusic != null) getAudioPlayer().stopMusic(menuMusic);
-
-							if (getb(Settings.getKeyIsGameOver()))
-							{
-								if (gameOverMusic != null) getAudioPlayer().resumeMusic(gameOverMusic);
-							}
-							else
-							{
-								if(backgroundMusic != null) getAudioPlayer().resumeMusic(backgroundMusic);
-							}
-						}
-					});
-				});
 			});
 		}
 
@@ -662,15 +661,19 @@ public class SaellyApp extends GameApplication {
 		addUINode(topBar);
 		this.muteButton = new javafx.scene.control.Button("", soundOnIcon);
 
-		muteButton.setOnAction(e -> {
+		muteButton.setOnAction(e ->
+		{
 			double currentVol = getSettings().getGlobalMusicVolume();
 
-			if (currentVol > 0) {
+			if (currentVol > 0)
+			{
 				lastVolume[0] = currentVol;
 				getSettings().setGlobalMusicVolume(0);
 				getSettings().setGlobalSoundVolume(0);
 				muteButton.setGraphic(soundOffIcon);
-			} else {
+			}
+			else
+			{
 				double restoreVol = (lastVolume[0] > 0) ? lastVolume[0] : Settings.getDefaultRestoreVolume();
 				getSettings().setGlobalMusicVolume(restoreVol);
 				getSettings().setGlobalSoundVolume(restoreVol);
@@ -683,25 +686,29 @@ public class SaellyApp extends GameApplication {
 		double scalePress = Settings.getMuteBtnScalePress();
 		double scaleNormal = Settings.getMuteBtnScaleNormal();
 
-		muteButton.setOnMouseEntered(e ->{
+		muteButton.setOnMouseEntered(e ->
+		{
 			var st = new ScaleTransition(Duration.millis(animDur),muteButton);
 			st.setToX(scaleHover);
 			st.setToY(scaleHover);
 			st.play();
 		});
-		muteButton.setOnMouseExited(e->{
+		muteButton.setOnMouseExited(e->
+		{
 			var st = new ScaleTransition(Duration.millis(animDur),muteButton);
 			st.setToX(scaleNormal);
 			st.setToY(scaleNormal);
 			st.play();
 		});
-		muteButton.setOnMousePressed(e->{
+		muteButton.setOnMousePressed(e->
+		{
 			var st = new ScaleTransition(Duration.millis(animDur),muteButton);
 			st.setToX(scalePress);
 			st.setToY(scalePress);
 			st.play();
 		});
-		muteButton.setOnMouseReleased(e->{
+		muteButton.setOnMouseReleased(e->
+		{
 			var st = new ScaleTransition(Duration.millis(animDur),muteButton);
 			st.setToX(scaleHover);
 			st.setToY(scaleHover);
@@ -757,7 +764,8 @@ public class SaellyApp extends GameApplication {
 
 			final int frameIndex = i;
 
-			KeyFrame frame = new KeyFrame(time, e->{
+			KeyFrame frame = new KeyFrame(time, e->
+			{
 				loadingSprite.setViewport(new Rectangle2D(x,y,frameWidth,frameHeight));
 
 				if (frameIndex < 6)
@@ -797,6 +805,7 @@ public class SaellyApp extends GameApplication {
 	{
 		vars.put(Settings.getKeyScore(), Settings.getInitScore());
 		vars.put(Settings.getKeyGeneralSpeed(), Settings.getInitSpeed());
+		vars.put(Settings.getKeyNextSpeedupScore(), Settings.getBarriersToSpeedupTheGame());
 		vars.put(Settings.getKeyBarrierSpeed(), Settings.getInitBarrierSpeed());
 		vars.put(Settings.getKeyGameStarted(), Settings.getInitGameStarted());
 		vars.put(Settings.getKeyLives(), Settings.getInitLives());
@@ -819,12 +828,20 @@ public class SaellyApp extends GameApplication {
 		// 1. Windowed (Fallback: F10)
 		String savedWindowedStr = prefs.get("key_for_" + Settings.getActionWindowed(), Settings.getDefaultKeyWindowed());
 		KeyCode windowedKey;
-		try { windowedKey = KeyCode.valueOf(savedWindowedStr); }
-		catch (IllegalArgumentException e) { windowedKey = KeyCode.F10; }
+		try
+		{
+			windowedKey = KeyCode.valueOf(savedWindowedStr);
+		}
+		catch (IllegalArgumentException e)
+		{
+			windowedKey = KeyCode.F10;
+		}
 
-		input.addAction(new UserAction(Settings.getActionWindowed()) {
+		input.addAction(new UserAction(Settings.getActionWindowed())
+		{
 			@Override
-			protected void onActionBegin() {
+			protected void onActionBegin()
+			{
 				if(windowManager != null) windowManager.switchMode(WindowMode.WINDOWED);
 			}
 		}, windowedKey);
@@ -832,12 +849,20 @@ public class SaellyApp extends GameApplication {
 		// 2. Borderless (Fallback: F11)
 		String savedBorderlessStr = prefs.get("key_for_" + Settings.getActionBorderless(), Settings.getDefaultKeyBorderless());
 		KeyCode borderlessKey;
-		try { borderlessKey = KeyCode.valueOf(savedBorderlessStr); }
-		catch (IllegalArgumentException e) { borderlessKey = KeyCode.F11; }
+		try
+		{
+			borderlessKey = KeyCode.valueOf(savedBorderlessStr);
+		}
+		catch (IllegalArgumentException e)
+		{
+			borderlessKey = KeyCode.F11;
+		}
 
-		input.addAction(new UserAction(Settings.getActionBorderless()) {
+		input.addAction(new UserAction(Settings.getActionBorderless())
+		{
 			@Override
-			protected void onActionBegin() {
+			protected void onActionBegin()
+			{
 				if(windowManager != null) windowManager.switchMode(WindowMode.BORDERLESS);
 			}
 		}, borderlessKey);
@@ -845,38 +870,55 @@ public class SaellyApp extends GameApplication {
 		// 3. Fullscreen (Fallback: F12)
 		String savedFullscreenStr = prefs.get("key_for_" + Settings.getActionFullscreen(), Settings.getDefaultKeyFullscreen());
 		KeyCode fullscreenKey;
-		try { fullscreenKey = KeyCode.valueOf(savedFullscreenStr); }
-		catch (IllegalArgumentException e) { fullscreenKey = KeyCode.F12; }
+		try
+		{
+			fullscreenKey = KeyCode.valueOf(savedFullscreenStr);
+		}
+		catch (IllegalArgumentException e)
+		{
+			fullscreenKey = KeyCode.F12;
+		}
 
-		input.addAction(new UserAction(Settings.getActionFullscreen()) {
+		input.addAction(new UserAction(Settings.getActionFullscreen())
+		{
 			@Override
-			protected void onActionBegin() {
+			protected void onActionBegin()
+			{
 				if(windowManager != null) windowManager.switchMode(WindowMode.FULLSCREEN);
 			}
 		}, fullscreenKey);
 		String savedJumpStr = prefs.get("key_for_" + Settings.getActionJump(), Settings.getDefaultKeyJump());
 		KeyCode jumpKey;
-		try {
+		try
+		{
 			jumpKey = KeyCode.valueOf(savedJumpStr);
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e)
+		{
 			jumpKey = KeyCode.SPACE;
 		}
 
-		onKeyDown(jumpKey, Settings.getActionJump(), () -> {
+		onKeyDown(jumpKey, Settings.getActionJump(), () ->
+		{
 			if (getb(Settings.getKeyIsGameOver()) || getb(Settings.getKeyIsCrashing())) return;
 			getGameWorld().getSingleton(EntityType.PLAYER).getComponent(PlayerComponent.class).jump();
 		});
 
 		String savedRestartStr = prefs.get("key_for_" + Settings.getActionRestart(), Settings.getDefaultKeyRestart());
 		KeyCode restartKey;
-		try {
+		try
+		{
 			restartKey = KeyCode.valueOf(savedRestartStr);
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e)
+		{
 			restartKey = KeyCode.ENTER;
 		}
 
-		onKeyDown(restartKey, Settings.getActionRestart(), () ->{
-			if (getb(Settings.getKeyIsGameOver())){
+		onKeyDown(restartKey, Settings.getActionRestart(), () ->
+		{
+			if (getb(Settings.getKeyIsGameOver()))
+			{
 				if (this.isFetchingData) return;
 				if (nameInputField != null && currentRun != null)
 				{
@@ -893,9 +935,12 @@ public class SaellyApp extends GameApplication {
 
 					int rank = highscoreList.indexOf(currentRun) +1;
 
-					highscoreL.safe(finalName, currentRun.getScore(),rank, ()->{
+					highscoreL.safe(finalName, currentRun.getScore(),rank, ()->
+					{
 						this.isFetchingData = false;
 						modalOverlay.setVisible(false);
+						set(Settings.getKeyIsGameOver(), false);
+						playGameMusic();
 						getGameController().startNewGame();
 					});
 				}
@@ -903,13 +948,16 @@ public class SaellyApp extends GameApplication {
 				{
 					if (gameOverBg != null) removeUINode(gameOverBg);
 					if (gameOverBox != null) removeUINode(gameOverBox);
+					set(Settings.getKeyIsGameOver(), false);
+					playGameMusic();
 					getGameController().startNewGame();
 				}
 			}
 		});
 
 		//Debug
-		getInput().addAction(new UserAction(Settings.getActionToggleDebug()) {
+		getInput().addAction(new UserAction(Settings.getActionToggleDebug())
+		{
 			@Override
 			protected void onActionBegin()
 			{
@@ -956,11 +1004,11 @@ public class SaellyApp extends GameApplication {
 			}
 		});
 
-		getGameTimer().runOnceAfter(() -> {
+		getGameTimer().runOnceAfter(() ->
+		{
 			set(Settings.getKeyIsGameOver(), true);
 
 			if (gameOverMusic != null) getAudioPlayer().loopMusic(gameOverMusic);
-			//Background noch anpassen!
 			if (topBar != null) topBar.setVisible(false);
 
 			if (this.isFetchingData)
@@ -1016,7 +1064,7 @@ public class SaellyApp extends GameApplication {
 			end = highscoreList.size() -1;
 		}
 
-		if (start < 0) start = 0; //Schutz falls bei Entwicklung weniger als 10 Einträge in der Liste vorhanden sind.
+		if (start < 0) start = 0; //protection if <10
 
 		for (int i = start; i <= end; i++)
 		{
@@ -1033,23 +1081,19 @@ public class SaellyApp extends GameApplication {
 				nameInputField.setPrefWidth(Settings.getNameInputPrefWidth());
 				nameInputField.setAlignment(Pos.CENTER);
 
-				nameInputField.textProperty().addListener((observable,oldVal,newVal)->{
+				nameInputField.textProperty().addListener((observable,oldVal,newVal)->
+				{
 					if (newVal.length() > Settings.getMaxPlayerNameLength()) nameInputField.setText(oldVal);
 				});
 
 				String formattedCurrentScore = String.format(Settings.getFormatGameoverScore(), geti(Settings.getKeyScore()));
 				Text scoreText = getUIFactoryService().newText("", Color.web(Settings.getColorHighlightHex()), Settings.getFontSizeGameoverRank());
-				scoreText.textProperty().bind(
-						localizedStringProperty(Settings.getLangKeyFinalScore())
-								.concat(": ")
-								.concat(formattedCurrentScore)
-								.concat(" ")
-								.concat(localizedStringProperty(Settings.getLangKeyHighscorePoints()))
-				);
+				scoreText.textProperty().bind(localizedStringProperty(Settings.getLangKeyFinalScore()).concat(": ").concat(formattedCurrentScore).concat(" ").concat(localizedStringProperty(Settings.getLangKeyHighscorePoints())));
 
 				playerSlot.getChildren().addAll(rankText, middleNameLabel, nameInputField, scoreText);
 				leaderboardBox.getChildren().add(playerSlot);
-			}else
+			}
+			else
 			{
 				ScoreEntry entry = highscoreList.get(i);
 
@@ -1088,18 +1132,14 @@ public class SaellyApp extends GameApplication {
 		if (gameVersion != null) gameVersion.setFill(statusColor);
 	}
 
-	public void toggleMuteFromMenu() {
-		if (muteButton != null) {
+	public void toggleMuteFromMenu()
+	{
+		if (muteButton != null)
+		{
 			muteButton.fire();
 		}
 	}
-	
-	private void safeBeforeExit()
-	{
-		//todo
-		System.out.print(Settings.getMsgSafeExit());
-	}
-	
+
 	private Stage getPrimaryStageSafely()
 	{
 		try
@@ -1126,14 +1166,7 @@ public class SaellyApp extends GameApplication {
 		}
 	}
 
-	public void changeGameLanguage(Language newLanguage)
-	{
-		FXGL.getLocalizationService().selectedLanguageProperty().set(newLanguage);
-		Preferences prefs = Preferences.userNodeForPackage(this.getClass());
-		prefs.put(Settings.getPrefsKeyLanguage(), newLanguage.getName());
-	}
-
-	public javafx.beans.property.BooleanProperty serverOnlineProperty()
+	public BooleanProperty serverOnlineProperty()
 	{
 		return serverOnlineProp;
 	}
@@ -1142,6 +1175,54 @@ public class SaellyApp extends GameApplication {
 	{
 		return highscoreList;
 	}
-	public HighscoreLoader getHighscoreL() {return highscoreL;}
-	
+	public HighscoreLoader getHighscoreL()
+	{
+		return highscoreL;
+	}
+
+	public void stopAllMusic()
+	{
+		if (backgroundMusic != null) getAudioPlayer().stopMusic(backgroundMusic);
+		if (menuMusic != null) getAudioPlayer().stopMusic(menuMusic);
+		if (gameOverMusic != null) getAudioPlayer().stopMusic(gameOverMusic);
+	}
+
+	public void playMainMenuMusic()
+	{
+		stopAllMusic();
+		if (menuMusic != null) getAudioPlayer().loopMusic(menuMusic);
+	}
+
+	public void playPauseMenuMusic()
+	{
+		stopAllMusic();
+		if (menuMusic != null) getAudioPlayer().loopMusic(menuMusic);
+	}
+
+	public void playGameMusic()
+	{
+		stopAllMusic();
+		boolean isGameOver = false;
+		if (FXGL.getWorldProperties().exists(Settings.getKeyIsGameOver()))
+		{
+			isGameOver = FXGL.getb(Settings.getKeyIsGameOver());
+		}
+		if (isGameOver)
+		{
+			if (gameOverMusic != null) getAudioPlayer().loopMusic(gameOverMusic);
+		}
+		else
+		{
+			if (backgroundMusic != null) getAudioPlayer().loopMusic(backgroundMusic);
+		}
+	}
+
+	public void setGameUIVisibility(boolean visible)
+	{
+		if (muteButton != null) muteButton.setVisible(visible);
+		if (gameVersion != null) gameVersion.setVisible(visible);
+		if (statusIndicator != null) statusIndicator.setVisible(visible);
+		if (topBar != null) topBar.setVisible(visible);
+	}
+
 }

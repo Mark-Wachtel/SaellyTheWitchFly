@@ -21,6 +21,7 @@ public class Settings
     private static final String KEY_IS_CRASHING = "isCrashing";
     private static final String KEY_IS_DEBUFF_ACTIVE = "isDebuffActive";
     private static final String KEY_PLACED = "placed";
+    private static final String KEY_NEXT_SPEEDUP_SCORE = "nextSpeedupScore";
 
     //Init
     private static final int INIT_SCORE = 0;
@@ -442,6 +443,7 @@ public class Settings
     public static String getKeyScore() { return KEY_SCORE; }
     public static String getKeyGeneralSpeed() { return KEY_GENERAL_SPEED; }
     public static String getKeyIsCrashing() { return  KEY_IS_CRASHING;}
+    public static String getKeyNextSpeedupScore() {return KEY_NEXT_SPEEDUP_SCORE;}
 
     //Init-Getter
     public static int getInitScore()

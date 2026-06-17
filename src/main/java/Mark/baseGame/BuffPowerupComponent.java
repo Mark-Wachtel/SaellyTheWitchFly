@@ -4,8 +4,6 @@ import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.component.Component;
 import javafx.util.Duration;
 
-import java.util.Set;
-
 public class BuffPowerupComponent extends Component
 {
 
@@ -51,11 +49,11 @@ public class BuffPowerupComponent extends Component
                 break;
 
             case SCORE_X10:
-                Settings.setScoreMulti(Settings.getScoreMulti() +Settings.getScorePowerupMultiplierBonus());
+                Settings.setScoreMulti(Settings.getScoreMulti() * Settings.getScorePowerupMultiplierBonus());
                 FXGL.play(Settings.getLinkToScorex10PickupSound());
                 FXGL.getGameTimer().runOnceAfter(() ->
                 {
-                    Settings.setScoreMulti(Settings.getScoreMulti() -Settings.getScorePowerupMultiplierBonus());
+                    Settings.setScoreMulti(Settings.getScoreMulti() / Settings.getScorePowerupMultiplierBonus());
                     FXGL.set(Settings.getKeyIsBuffActive(), false);
                 }, Duration.seconds(Settings.getScoreX10DurationSeconds()));
                 break;
