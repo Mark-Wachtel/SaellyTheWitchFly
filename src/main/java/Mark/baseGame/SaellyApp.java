@@ -982,6 +982,7 @@ public class SaellyApp extends GameApplication {
 		vars.put(Settings.getKeyIsDebugging(), Settings.getInitIsDebugging());
 		vars.put(Settings.getKeyActiveBuffImagePath(), Settings.getInitActiveBuffImagePath());
 		vars.put(Settings.getKeyCurrentBarrierGap(), Settings.getBarrierGap());
+		vars.put(Settings.getKeyScoreActual(), Settings.getScoreMulti());
 	}
 	
 	

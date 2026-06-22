@@ -47,14 +47,14 @@ public class BuffPowerupComponent extends Component
                 break;
 
             case SCORE_X10:
-                Settings.setScoreMulti(Settings.getScoreMulti() * Settings.getScorePowerupMultiplierBonus());
+                FXGL.set(Settings.getKeyScoreActual(),Settings.getScoreMulti() * Settings.getScorePowerupMultiplierBonus());
                 FXGL.play(Settings.getLinkToScorex10PickupSound());
 
                 FXGL.set(Settings.getKeyActiveBuffImagePath(), Settings.getLinkToScorex10Image());
 
                 FXGL.getGameTimer().runOnceAfter(() ->
                 {
-                    Settings.setScoreMulti(Settings.getScoreMulti() / Settings.getScorePowerupMultiplierBonus());
+                    FXGL.set(Settings.getKeyScoreActual(), Settings.getScoreMulti());
                     FXGL.set(Settings.getKeyIsBuffActive(), false);
 
                     FXGL.set(Settings.getKeyActiveBuffImagePath(), "");

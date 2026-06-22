@@ -25,6 +25,7 @@ public class Settings
     private static final String KEY_NEXT_SPEEDUP_SCORE = "nextSpeedupScore";
     private static final String KEY_ACTIVE_BUFF_IMAGE_PATH = "activeBuffImagePath";
     private static final String KEY_CURRENT_BARRIER_GAP = "currentBarrierGap";
+    private static final String KEY_SCORE_ACTUAL = "score_actual";
 
     //FXGL KeyCodes
     private static final KeyCode DEFAULT_KEYCODE_WINDOWED = KeyCode.F10;
@@ -61,7 +62,7 @@ public class Settings
     private static final String DEFAULT_KEY_BORDERLESS = "F11";
     private static final String DEFAULT_KEY_FULLSCREEN = "F12";
 
-    private static int placedValue = 1;
+    private static final int PLACED_VALUE = 1;
 
     //UI
     private static final String LINK_TO_HEART_UI_IMAGE = "ui/heart.png";
@@ -80,36 +81,36 @@ public class Settings
     private static final double SLOW_MOTION_OFFSET_X = 0.0;
     private static final double SLOW_MOTION_OFFSET_Y = 0.0;
 
-    private static double gameSpeed = 30.0; //Die Geschwindigkeit in der unser Spiel abläuft. Einfluss auf z.B. Hintergrundbild Scrolling.
-    private static double barrierSpeed = 130.0; //Die Geschwindigkeit in der sie Hindernisse von Rechts nach Links bewegen.
+    private static final double GAME_SPEED = 30.0; //Die Geschwindigkeit in der unser Spiel abläuft. Einfluss auf z.B. Hintergrundbild Scrolling.
+    private static final double BARRIER_SPEED = 130.0; //Die Geschwindigkeit in der sie Hindernisse von Rechts nach Links bewegen.
     private static final double PARALLAX_FACTOR_BACKGROUND = 0.2;
     private static final double PARALLAX_FACTOR_FOREGROUND = 1.4;
     private static final double IDLE_JUMP_HEIGHT = 20; //Die Höhe in Pixel die wir in der Idle Animation Hoch und Runter hüpfen.
     private static final double JUMP_MULTI = -350.0; //Die Springbeschleunigung. Positive Werte lassen Objekte auf der Y-Achse nach unten "fallen". In unserem Fall haben wir ein negativ Wert (-X) was bedeutet: Wir "schweben" 350 Pixel gegen die 900 Pixel Schwerkraft, die dauerhaft wirken.
-    private static double gravity = 900.0; //Die Erdanziehungskraft, in unserem Fall wird der Spieler (oder jedes Objekt mit Anbindung an die Physik) jede Sekunde um 900px pro Sekunde nach unten Angezogen.
-    private static int scoreMulti = 1; //Der Multiplikator der Punkte die unser Spieler für das passieren eines Hindernisses erhält, aktuell bekommt der Spieler 1 Punkt pro Hindernis. Dies kann gesteigert werden wenn der Spieler Power-Ups einsammelt (muss noch implementiert werden), z.B. +2 oder +10 Punkte pro Hindernis, eventuell steigert sich der Multiplikator auch mit der Geschwindigkeit).
+    private static final double GRAVITY = 900.0; //Die Erdanziehungskraft, in unserem Fall wird der Spieler (oder jedes Objekt mit Anbindung an die Physik) jede Sekunde um 900px pro Sekunde nach unten Angezogen.
+    private static final int SCORE_MULTI = 1; //Der Multiplikator der Punkte die unser Spieler für das passieren eines Hindernisses erhält, aktuell bekommt der Spieler 1 Punkt pro Hindernis. Dies kann gesteigert werden wenn der Spieler Power-Ups einsammelt (muss noch implementiert werden), z.B. +2 oder +10 Punkte pro Hindernis, eventuell steigert sich der Multiplikator auch mit der Geschwindigkeit).
     private static final double WINDOW_SCALE = 0.60; //Die Prozente wie groß das Fenster im Verhältnis zum Bildschirm ist. In unserem Fall 60%.
     private static final double ASPECT_RATIO = 16.0 / 9.0; //16 zu 9 Seitenverhältnis.
     private static final int STANDARD_WINDOW_WIDTH = 1280; //Standard Breite des Fensters.
     private static final int STANDARD_WINDOW_HEIGHT = 756; //Standard Höhe des Fensters inklusive Titelleiste. Hier 720 für das Spiel + 36 für die Titelleiste = 756px.
     private static final int STANDARD_WINDOW_HEIGHT_WITHOUT_TITLEBAR = 720; //Standard Höhe des Fensters ohne die Titelleiste.
     private static final double STANDARD_TITLEBAR_HEIGHT = 36.0; //Standard Höhe der Titelleiste.
-    private static String windowTitle = "Saelly the Flying Witch"; //Titel der in der Titelleiste angezeigt wird. Nicht final damit der Titel z.B. auf Settings geändert werden kann.
+    private static final String WINDOW_TITLE = "Saelly the Flying Witch"; //Titel der in der Titelleiste angezeigt wird. Nicht final damit der Titel z.B. auf Settings geändert werden kann.
     private static final String GAME_VERSION = "0.1.1 - Alpha 1"; //Version des Programmes/Spieles. Aktuell 0.0.1 - in den Startlöchern.
     private static final int LOGO_PREF_SIZE_WIDTH = 30; //Bevorzugte Breite des Logos.
     private static final int LOGO_PREF_SIZE_HEIGHT = 40; //Bevorzugte Höhe des Logos.
     private static final int LOGO_FIT_HEIGHT = 30; //Zwingt das Logo genau in 20 Pixel egal welche Ursprungsgröße es hatte. Wenn preserveRatio aktiviert ist wird die Breite automatisch propotional angepasst.
     private static final double MIN_SPAWN_HEIGHT_BARRIER = 50; //Minimale Spawnhöhe der Barriere.
     private static final double MAX_SPAWN_HEIGHT_BARRIER = 400; //Maximale Spawnhöhe der Barriere.
-    private static double spawnDurationBarrier = 2; //Dauer in Sekunden in denen Barrieren gespawned werden.
-    private static double spawnDurationBuffPowerup = 10; //Dauer in Sekunden in denen ein Powerup gespawned wird.
-    private static int barriersToSpeedupTheGame = 50; //Wie viele Barriern werden benötigt bevor das Spiel schneller wird (Schneller zu Seite scrolled).
+    private static final double SPAWN_DURATION_BARRIER = 2; //Dauer in Sekunden in denen Barrieren gespawned werden.
+    private static final double SPAWN_DURATION_BUFF_POWERUP = 10; //Dauer in Sekunden in denen ein Powerup gespawned wird.
+    private static final int BARRIERS_TO_SPEEDUP_THE_GAME = 50; //Wie viele Barriern werden benötigt bevor das Spiel schneller wird (Schneller zu Seite scrolled).
 
     //Powerups
-    private static double invulnerableDurationInSeconds  = 2;
-    private static double slowMotionBuffPowerupRatio = 0.5;
-    private static int slowMotionBuffPowerupDurationSeconds = 8;
-    private static int scoreX10DurationSeconds = 10;
+    private static final double INVULNERABLE_DURATION_IN_SECONDS = 2;
+    private static final double SLOW_MOTION_BUFF_POWERUP_RATIO = 0.5;
+    private static final int SLOW_MOTION_BUFF_POWERUP_DURATION_SECONDS = 8;
+    private static final int SCORE_X_10_DURATION_SECONDS = 10;
     private static final int SCORE_X10_MULTI = 10;
     private static final int SLOW_MOTION_IMAGE_WIDTH = 40;
     private static final int SLOW_MOTION_IMAGE_HEIGHT = 40;
@@ -592,6 +593,7 @@ public class Settings
     public static String getKeyIsCrashing() { return  KEY_IS_CRASHING;}
     public static String getKeyNextSpeedupScore() {return KEY_NEXT_SPEEDUP_SCORE;}
     public static String getKeyCurrentBarrierGap() {return KEY_CURRENT_BARRIER_GAP;}
+    public static String getKeyScoreActual() { return KEY_SCORE_ACTUAL;}
 
     //FXGL KeyCode getter
     public static KeyCode getDefaultKeyCodeWindowed() {return DEFAULT_KEYCODE_WINDOWED;}
@@ -667,7 +669,7 @@ public class Settings
         return INIT_IS_DEBUFF_ACTIVE;
     }
     public static int getInitPlacedValue() {
-        return placedValue;
+        return PLACED_VALUE;
     }
     //defaults
     public static String getDefaultKeyJump() { return DEFAULT_KEY_JUMP; }
@@ -715,11 +717,11 @@ public class Settings
     //Getter
     public static double getGameSpeed()
     {
-        return gameSpeed;
+        return GAME_SPEED;
     }
     public static double getBarrierSpeed()
     {
-        return barrierSpeed;
+        return BARRIER_SPEED;
     }
     public static double getIdleJumpHeight()
     {
@@ -727,7 +729,7 @@ public class Settings
     }
     public static int getScoreMulti()
     {
-        return scoreMulti;
+        return SCORE_MULTI;
     }
     public static int getPlayerStartXPosition()
     {
@@ -759,7 +761,7 @@ public class Settings
     }
     public static double getGravity()
     {
-        return gravity;
+        return GRAVITY;
     }
     public static double getWindowScale()
     {
@@ -787,7 +789,7 @@ public class Settings
     }
     public static String getWindowTitle()
     {
-        return windowTitle;
+        return WINDOW_TITLE;
     }
     public static String getGameVersion()
     {
@@ -815,15 +817,15 @@ public class Settings
     }
     public static double getSpawnDurationBarrier()
     {
-        return spawnDurationBarrier;
+        return SPAWN_DURATION_BARRIER;
     }
     public static double getSpawnDurationBuffPowerup()
     {
-        return spawnDurationBuffPowerup;
+        return SPAWN_DURATION_BUFF_POWERUP;
     }
     public static int getBarriersToSpeedupTheGame()
     {
-        return barriersToSpeedupTheGame;
+        return BARRIERS_TO_SPEEDUP_THE_GAME;
     }
     public static int getBarrierScaleWidth()
     {
@@ -839,7 +841,7 @@ public class Settings
     //BuffPowerups
     public static double getInvulnerableDurationInSeconds()
     {
-        return invulnerableDurationInSeconds;
+        return INVULNERABLE_DURATION_IN_SECONDS;
     }
     public static int getScoreX10Multi()
     {
@@ -847,15 +849,15 @@ public class Settings
     }
     public static double getSlowMotionBuffPowerupRatio()
     {
-        return slowMotionBuffPowerupRatio;
+        return SLOW_MOTION_BUFF_POWERUP_RATIO;
     }
     public static int getSlowMotionBuffPowerupDurationSeconds()
     {
-        return slowMotionBuffPowerupDurationSeconds;
+        return SLOW_MOTION_BUFF_POWERUP_DURATION_SECONDS;
     }
     public static int getScoreX10DurationSeconds()
     {
-        return scoreX10DurationSeconds;
+        return SCORE_X_10_DURATION_SECONDS;
     }
     public static int getSlowMotionImageWidth()
     {
