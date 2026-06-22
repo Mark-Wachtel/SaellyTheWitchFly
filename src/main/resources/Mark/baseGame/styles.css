@@ -14,13 +14,13 @@
     -fx-background-radius: 4px;
     -fx-padding: 2px;
 }
+
 /* TitleBar */
 .custom-title-bar {
     -fx-background-color: rgba(20, 20, 20, 0.95);
     -fx-border-color: #ff9e00;
     -fx-border-width: 0 0 2 0;
 }
-
 .magic-close-button {
     -fx-stroke: #FFD700;
     -fx-stroke-width: 5;
@@ -33,7 +33,6 @@
     -fx-padding: 0;
     -fx-cursor: hand;
 }
-
 .leaderboard-box {
     -fx-background-color: rgba(0, 0, 0, 0.7);
     -fx-padding: 15;
@@ -42,17 +41,16 @@
     -fx-border-width: 2px;
     -fx-border-radius: 10px;
 }
-
 .name-input-field {
     -fx-background-color: transparent;
     -fx-text-fill: #ff9e00;
     -fx-border-color: #ff9e00;
     -fx-border-width: 0 0 2 0;
 }
+
 /* GameOver Screen */
 .game-over-screen {
 }
-
 .game-over-title {
     -fx-effect: dropshadow(gaussian, rgba(255, 158, 0, 0.8), 10, 0.5, 0, 0);
 }
@@ -61,7 +59,6 @@
 .pause-menu-bg {
     -fx-background-color: rgba(0, 0, 0, 0.7);
 }
-
 .magical-button {
     -fx-font-family: "Eagle Lake";
     -fx-font-size: 24px;
@@ -72,26 +69,21 @@
     -fx-padding: 10 30 10 30;
     -fx-cursor: hand;
 }
-
 .magical-button:hover {
     -fx-background-color: #ff9e00;
     -fx-text-fill: white;
 }
-
-/* --- Pause Menü --- */
 .magical-title {
     -fx-font-family: "Eagle Lake";
     -fx-font-size: 60px;
     -fx-font-weight: bold;
     -fx-fill: #f3e5ab;
 }
-
 .magical-text {
     -fx-font-family: "Eagle Lake";
     -fx-font-size: 20px;
     -fx-fill: #f3e5ab;
 }
-
 .magical-slider .track {
     -fx-background-color: rgba(0, 0, 0, 0.6);
     -fx-border-color: #ff9e00;
@@ -99,48 +91,39 @@
     -fx-background-radius: 5px;
     -fx-padding: 6px;
 }
-
 .magical-slider .thumb {
     -fx-background-color: #ff9e00;
     -fx-background-radius: 4px;
     -fx-padding: 10px;
 }
-
 .magical-slider .thumb:hover {
     -fx-background-color: #cc7a00;
     -fx-cursor: hand;
 }
-
 .magical-scroll-pane {
     -fx-background: transparent;
     -fx-background-color: transparent;
 }
-
 .magical-scroll-pane .viewport {
     -fx-background-color: transparent;
 }
-
 .magical-scroll-pane .scroll-bar:vertical {
     -fx-background-color: transparent;
     -fx-width: 16px;
 }
-
 .magical-scroll-pane .scroll-bar:vertical .track {
     -fx-background-color: rgba(0, 0, 0, 0.6);
     -fx-border-color: #ff9e00;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
 }
-
 .magical-scroll-pane .scroll-bar:vertical .thumb {
     -fx-background-color: #ff9e00;
     -fx-background-radius: 4px;
 }
-
 .magical-scroll-pane .scroll-bar:vertical .thumb:hover {
     -fx-background-color: #cc7a00;
 }
-
 .magical-scroll-pane .scroll-bar .increment-button,
 .magical-scroll-pane .scroll-bar .decrement-button {
     -fx-background-color: transparent;
@@ -151,13 +134,41 @@
     -fx-shape: " ";
     -fx-padding: 0;
 }
-
 .credits-text {
     -fx-text-alignment: center;
     -fx-fill: #f3e5ab;
 }
-
 .magical-button-waiting {
     -fx-text-fill: #FFD700 !important;
     -fx-border-color: #FFD700 !important;
+}
+
+/* Ingame */
+.ingame-score-text {
+    -fx-font-family: "Eagle Lake";
+    -fx-fill: #ff9e00; /* Hier ist jetzt das exakte Orange! */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.9), 5, 0.6, 2, 2);
+}
+.ingame-lives-text {
+    -fx-font-family: "Eagle Lake";
+    -fx-fill: #ff9e00; /* Passend zum Highlight-Orange deiner Settings */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.9), 5, 0.6, 2, 2);
+}
+/* Overlays */
+.dim-overlay-bg
+{
+    -fx-fill: rgba(0, 0, 0, 0.6);
+}
+/* Game Over Screen & Leaderboard */
+.game-over-instruction {
+    -fx-fill: yellow;
+}
+.leaderboard-entry-normal {
+    -fx-fill: lightgray;
+}
+.leaderboard-entry-gray {
+    -fx-fill: gray;
+}
+.loading-text {
+    -fx-fill: white;
 }

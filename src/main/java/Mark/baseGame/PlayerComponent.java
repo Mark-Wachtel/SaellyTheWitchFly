@@ -18,6 +18,8 @@ public class PlayerComponent extends Component
     private double startY;
     private static final double MAX_FALL_SPEED = Settings.getPlayerMaxFallSpeed(); //Maximale Fallgeschwindigkeit
     private static final double MAX_RISE_SPEED = Settings.getPlayerMaxRiseSpeed(); //Maximale Aufstiegsgeschwindigkeit
+    private boolean canShoot = true;
+    private Weapon currentWeapon = new DarkMagicWeapon();
 
     @Override
     public void onAdded()
@@ -30,6 +32,11 @@ public class PlayerComponent extends Component
         jumpSound = FXGL.getAssetLoader().loadSound(Settings.getLinkToJumpSound());
 
     }
+
+    public void setWeapon(Weapon newWeapon) {
+        this.currentWeapon = newWeapon;
+    }
+
 
     @Override
     public void onUpdate(double tpf)
@@ -99,9 +106,10 @@ public class PlayerComponent extends Component
         }
         else
         {
-            double effectW = Settings.getCrashEffectTargetWidth();
-            double effectH = Settings.getCrashEffectTargetHeight();
-            javafx.geometry.Point2D center = entity.getCenter();
+            double effectW = Settings.getCrashEffectFrameWidth() * Settings.getCrashEffectScale();
+            double effectH = Settings.getCrashEffectFrameHeight() * Settings.getCrashEffectScale();
+
+            Point2D center = entity.getCenter();
 
             double spawnX = center.getX() - (effectW / 2.0) + Settings.getCrashEffectOffsetX();
             double spawnY = center.getY() - (effectH / 2.0) + Settings.getCrashEffectOffsetY();
@@ -110,8 +118,7 @@ public class PlayerComponent extends Component
 
             FXGL.entityBuilder()
                     .at(spawnX, spawnY)
-                    .zIndex(100)
-                    .view(new javafx.scene.shape.Rectangle(effectW, effectH, javafx.scene.paint.Color.TRANSPARENT))
+                    .zIndex(Settings.getZIndexGame())
                     .with(new EffectComponent(EffectComponent.EffectType.CRASH))
                     .buildAndAttach();
 
@@ -123,7 +130,7 @@ public class PlayerComponent extends Component
     {
         if (entity.getY() < 0)
         {
-            physics.overwritePosition(new Point2D(entity.getX(), 20));
+            physics.overwritePosition(new Point2D(entity.getX(), Settings.getPlayerBounceMargin()));
             physics.setVelocityY(0);
         }
         else
@@ -152,6 +159,23 @@ public class PlayerComponent extends Component
         FXGL.getAudioPlayer().stopSound(jumpSound);
         FXGL.getAudioPlayer().playSound(jumpSound);
 
+    }
+
+    public void shoot()
+    {
+        if (!canShoot || FXGL.getb(Settings.getKeyIsGameOver())) return;
+
+        Point2D mousePos = FXGL.getInput().getMousePositionWorld();
+
+        boolean shotFired = currentWeapon.shoot(entity, mousePos);
+
+        if (shotFired)
+        {
+            canShoot = false;
+            FXGL.getGameTimer().runOnceAfter(() -> {
+                canShoot = true;
+            }, javafx.util.Duration.seconds(currentWeapon.getCooldown()));
+        }
     }
 
 }

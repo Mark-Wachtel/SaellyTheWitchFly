@@ -1,5 +1,6 @@
 package Mark.baseGame;
 
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 
 public class Settings
@@ -22,6 +23,16 @@ public class Settings
     private static final String KEY_IS_DEBUFF_ACTIVE = "isDebuffActive";
     private static final String KEY_PLACED = "placed";
     private static final String KEY_NEXT_SPEEDUP_SCORE = "nextSpeedupScore";
+    private static final String KEY_ACTIVE_BUFF_IMAGE_PATH = "activeBuffImagePath";
+    private static final String KEY_CURRENT_BARRIER_GAP = "currentBarrierGap";
+
+    //FXGL KeyCodes
+    private static final KeyCode DEFAULT_KEYCODE_WINDOWED = KeyCode.F10;
+    private static final KeyCode DEFAULT_KEYCODE_BORDERLESS = KeyCode.F11;
+    private static final KeyCode DEFAULT_KEYCODE_FULLSCREEN = KeyCode.F12;
+    private static final KeyCode DEFAULT_KEYCODE_JUMP = KeyCode.SPACE;
+    private static final KeyCode DEFAULT_KEYCODE_RESTART = KeyCode.ENTER;
+    private static final KeyCode DEFAULT_KEYCODE_TOGGLE_DEBUG = KeyCode.H;
 
     //Init
     private static final int INIT_SCORE = 0;
@@ -41,6 +52,7 @@ public class Settings
     private static final boolean INIT_IS_BUFF_ACTIVE = false;
     private static final boolean INIT_IS_DEBUFF_ACTIVE = false;
     private static final boolean INIT_IS_DEBUGGING = false;
+    private static final String  INIT_ACTIVE_BUFF_IMAGE_PATH = " ";
 
     //defaults
     private static final String DEFAULT_KEY_JUMP = "SPACE";
@@ -58,16 +70,20 @@ public class Settings
     private static final String LINK_TO_UI_APPICON = "ui/ui_appIcon.png";
     private static final int APPICON_UI_IMAGE_WIDTH = 32;
     private static final int APPICON_UI_IMAGE_HEIGHT = 32;
+    private static final double UI_LIVES_OFFSET_Y = 5.0;
+    private static final int LOADING_ANIM_MAX_DOTS = 4;
     //Offsets
     private static final double CRASH_EFFECT_OFFSET_X = 0.0;
-    private static final double CRASH_EFFECT_OFFSET_Y = -500.0;
-    private static final double PICKUP_EFFECT_OFFSET_X = -100.0;
-    private static final double PICKUP_EFFECT_OFFSET_Y = -500.0;
+    private static final double CRASH_EFFECT_OFFSET_Y = 0.0;
+    private static final double PICKUP_EFFECT_OFFSET_X = 0.0;
+    private static final double PICKUP_EFFECT_OFFSET_Y = 0.0;
     private static final double SLOW_MOTION_OFFSET_X = 0.0;
     private static final double SLOW_MOTION_OFFSET_Y = 0.0;
 
     private static double gameSpeed = 30.0; //Die Geschwindigkeit in der unser Spiel abläuft. Einfluss auf z.B. Hintergrundbild Scrolling.
     private static double barrierSpeed = 130.0; //Die Geschwindigkeit in der sie Hindernisse von Rechts nach Links bewegen.
+    private static final double PARALLAX_FACTOR_BACKGROUND = 0.2;
+    private static final double PARALLAX_FACTOR_FOREGROUND = 1.4;
     private static final double IDLE_JUMP_HEIGHT = 20; //Die Höhe in Pixel die wir in der Idle Animation Hoch und Runter hüpfen.
     private static final double JUMP_MULTI = -350.0; //Die Springbeschleunigung. Positive Werte lassen Objekte auf der Y-Achse nach unten "fallen". In unserem Fall haben wir ein negativ Wert (-X) was bedeutet: Wir "schweben" 350 Pixel gegen die 900 Pixel Schwerkraft, die dauerhaft wirken.
     private static double gravity = 900.0; //Die Erdanziehungskraft, in unserem Fall wird der Spieler (oder jedes Objekt mit Anbindung an die Physik) jede Sekunde um 900px pro Sekunde nach unten Angezogen.
@@ -97,15 +113,20 @@ public class Settings
     private static final int SCORE_X10_MULTI = 10;
     private static final int SLOW_MOTION_IMAGE_WIDTH = 40;
     private static final int SLOW_MOTION_IMAGE_HEIGHT = 40;
+    private static final double SLOW_MOTION_ANIMATION_SCALE = 0.5;
     private static final int INVULNERABLE_IMAGE_WIDTH = 40;
     private static final int INVULNERABLE_IMAGE_HEIGHT = 40;
+    private static final double INVULNERABLE_ANIMATION_SCALE = 0.5;
+    private static final double INVULNERABLE_OFFSET_X = 0.0;
+    private static final double INVULNERABLE_OFFSET_Y = 0.0;
     private static final int SCORE_X10_IMAGE_WIDTH = 40;
     private static final int SCORE_X10_IMAGE_HEIGHT = 40;
     private static final int EXTRA_LIFE_IMAGE_WIDTH = 40;
     private static final int EXTRA_LIFE_IMAGE_HEIGHT = 40;
     private static final int SCORE_POWERUP_MULTIPLIER_BONUS = 10;
     private static final int EXTRA_LIFE_POWERUP_BONUS = 1;
-
+    private static final double BUFF_SHRINK_SCALE_RATIO = 0.5;
+    private static final double BUFF_GAP_WIDER_RATIO = 1.5;
 
     private static final int PLAYER_START_X_POSITION = 300; //Startposition auf der X-Achse des Spieler's
     private static final int PLAYER_START_Y_POSITION = 300; //Startposition auf der Y-Achse des Spieler's
@@ -113,10 +134,32 @@ public class Settings
     private static final int PLAYER_COLLISION_BOX_HEIGHT = 20; //Höhe der Kollisionsbox Abfrage des Spieler's.
     private static final double PLAYER_MAX_FALL_SPEED = 400.0; //Maximale Fallgeschwindigkeit
     private static final double PLAYER_MAX_RISE_SPEED = -500.0; //Maximale Aufstiegsgeschwindigkeit
+    private static final double PLAYER_COLLISION_BOX_OFFSET_X = 0.0;
+    private static final double PLAYER_COLLISION_BOX_OFFSET_Y = 0.0;
+    private static final double PLAYER_BOUNCE_MARGIN = 20.0;
 
 
+    //Obstacle
     private static final int BARRIER_SCALE_WIDTH = 200;
     private static final int BARRIER_SCALE_HEIGHT = 200;
+    private static final double BARRIER_HITBOX_WIDTH_RATIO = 0.4;
+    private static final double BARRIER_HITBOX_HEIGHT_RATIO = 0.8;
+    private static final double BARRIER_GAP = 100.0;
+
+    //Wappon system
+    private static final String LINK_TO_DARK_MAGIC_IMAGE = "projectiles/darkMatter.png";
+    private static final String LINK_TO_SHOOT_SOUND = "sounds/shootDarkMagic.wav";
+    private static final int DARK_MAGIC_WIDTH = 40;
+    private static final int DARK_MAGIC_HEIGHT = 40;
+    private static final double DARK_MAGIC_SPEED = 600.0;
+    private static final double DARK_MAGIC_COOLDOWN_SEC = 0.4;
+    private static final double DARK_MAGIC_HITBOX_WIDTH = 20.0;
+    private static final double DARK_MAGIC_HITBOX_HEIGHT = 20.0;
+    private static final double DARK_MAGIC_HITBOX_OFFSET_X = 0.0;
+    private static final double DARK_MAGIC_HITBOX_OFFSET_Y = 0.0;
+    private static final int DARK_MAGIC_DAMAGE = 10;
+    private static final double DARK_MAGIC_RANGE = 800.0;
+    private static final String HITBOX_NAME_PROJECTILE = "ProjectileBody";
 
 
     //Links zu Bildern, Musik und Sounds
@@ -141,6 +184,14 @@ public class Settings
     private static final String LINK_TO_EXTRA_LIVES_PICKUP_SOUND = "pickup.wav";
     private static final String LINK_TO_EXTRA_LIVES_ACTIV_SOUND = "ExtraLivesActivSound.wav";
     private static final String LINK_TO_EXTRA_LIVES_IMAGE = "powerups/extraLife.png";
+    private static final String LINK_TO_SHRINK_IMAGE = "powerups/shrink.png";
+    private static final String LINK_TO_SHRINK_ANIMATION = "effects/shrinkEffect.png";
+    private static final String LINK_TO_SHRINK_PICKUP_SOUND = "sounds/pickup.wav";
+    private static final String LINK_TO_SHRINK_ACTIVE_SOUND = "sounds/shrinkActiveSound.wav";
+    private static final String LINK_TO_GAP_WIDER_IMAGE = "powerups/gapWider.png";
+    private static final String LINK_TO_GAP_WIDER_ANIMATION = "effects/gapWiderEffect.png";
+    private static final String LINK_TO_GAP_WIDER_PICKUP_SOUND = "sounds/pickup.wav";
+    private static final String LINK_TO_GAP_WIDER_ACTIVE_SOUND = "sounds/gapWiderActiveSound.wav";
     private static final String LINK_TO_TOP_BARRIER_IMAGE = "barriers/topBarrier.png";
     private static final String LINK_TO_LOGO = "ui/ui_appIcon.png"; //Link
     private static final String LINK_TO_FONT_EAGLE = "EagleLake.ttf"; //Link
@@ -157,6 +208,12 @@ public class Settings
     private static final String LINK_TO_INIT_LOADINGSCREEN_BACKGROUND_IMAGE = "gameBackgroundLoopable.png";
     private static final String LINK_TO_UI_INTRO_BACKGROUND_IMAGE = "gameBackgroundLoopable.png";
     private static final String LINK_TO_CSS = "/Mark/baseGame/styles.css";
+    private static final String LINK_TO_BOTTOM_BARRIER_IMAGE = "barriers/bottomBarrier.png";
+    private static final String LINK_TO_GAP_NARROWER_IMAGE = "powerups/gapNarrower.png";
+    private static final String LINK_TO_GAP_NARROWER_PICKUP_SOUND = "sounds/gapNarrowerPickup.wav";
+    private static final String LINK_TO_SPEED_UP_IMAGE = "powerups/speedUp.png";
+    private static final String LINK_TO_SPEED_UP_PICKUP_SOUND = "sounds/speedUpPickup.wav";
+    private static final String LINK_TO_CLOUD_IMAGE = "cloudOne.png";
 
     //Buff Settings
     private static final int BUFF_ANIM_FRAMES_PER_ROW = 5;
@@ -166,6 +223,16 @@ public class Settings
     private static final int BUFF_ANIM_START_FRAME = 0;
     private static final int BUFF_ANIM_END_FRAME = 4;
     private static final double BUFF_SCALE_FACTOR = 1.5;
+    private static final double BUFF_SHRINK_DURATION_SEC = 5.0;
+    private static final double BUFF_GAP_WIDER_DURATION_SEC = 5.0;
+    private static final double BUFF_SPAWN_CHANCE = 0.15;
+    private static final double DEBUFF_SPAWN_CHANCE = 0.10;
+    private static final double SHRINK_BUFF_DURATION_SEC = 10.0;
+    private static final double GAP_WIDER_BUFF_DURATION_SEC = 8.0;
+    private static final double GAP_NARROWER_DEBUFF_DURATION_SEC = 6.0;
+    private static final double DEBUFF_GAP_NARROWER_RATIO = 0.6;
+    private static final double SPEED_UP_DEBUFF_DURATION_SEC = 6.0;
+    private static final double SPEED_UP_DEBUFF_RATIO = 1.5;
 
     //MainClass
     private static final double POWERUP_SPAWN_CHANCE = 0.1;
@@ -198,6 +265,30 @@ public class Settings
     private static final double DEFAULT_RESTORE_VOLUME = 0.5;
     private static final String FORMAT_LIVES = "x %d";
     private static final String FORMAT_GAMEOVER_SCORE = "%06d";
+    private static final String CSS_CLASS_NAME_INPUT = "name-input-field";
+    private static final String CSS_CLASS_GAME_OVER_SCREEN = "game-over-screen";
+    private static final String CSS_CLASS_GAME_OVER_TITLE = "game-over-title";
+    private static final String CSS_CLASS_LEADERBOARD_BOX = "leaderboard-box";
+    private static final String CSS_CLASS_SCORE_UI = "ingame-score-text";
+    private static final String CSS_CLASS_LIVES_UI = "ingame-lives-text";
+    private static final String CSS_CLASS_DIM_OVERLAY = "dim-overlay-bg";
+    private static final String CSS_CLASS_LOADING_TEXT = "loading-text";
+    private static final String CSS_CLASS_LEADERBOARD_NORMAL = "leaderboard-entry-normal";
+    private static final String CSS_CLASS_LEADERBOARD_GRAY = "leaderboard-entry-gray";
+    private static final String CSS_CLASS_GAME_OVER_INSTRUCTION = "game-over-instruction";
+    private static final String FORMAT_GAMEOVER_LEADERBOARD = "#%d  %s: %-5s  %s: %06d %s";
+    private static final String CSS_CLASS_LOADING_PROGRESS_BAR = "loading-progress-bar";
+    private static final double INVISIBLE_BARRIER_THICKNESS = 50.0;
+    private static final double POWERUP_SPAWN_X_OFFSET = 50.0;
+    private static final String ERR_MSG_BUFF_IMAGE_NOT_FOUND = "WARNUNG: Buff-Bild nicht gefunden unter: ";
+
+    //paralax layer clouds
+    private static final double CLOUD_SPAWN_INTERVAL_SEC = 4.0;
+    private static final double CLOUD_SCALE_MIN = 0.4;
+    private static final double CLOUD_SCALE_MAX = 1.1;
+    private static final double CLOUD_SPAWN_Y_MIN = -50.0;
+    private static final double CLOUD_SPAWN_X_OFFSET = 100.0;
+    private static final double CLOUD_OPACITY = 0.85;
 
     //Language keys
     private static final String LANG_KEY_GAME_TITLE = "game.title";
@@ -279,6 +370,8 @@ public class Settings
     private static final String MSG_ERR_ROOT = "FXGL Game Root not available...";
     private static final String MSG_ERR_SCENE = "Scene not available...";
     private static final String MSG_SAFE_EXIT = "Safe and Exit...";
+    private static final String FALLBACK_LOADING_TEXT_EN = "Loading";
+    private static final String FALLBACK_LOADING_TEXT_DE = "Wird geladen";
     //Intro Scene
     private static final double INTRO_FADE_DURATION_SECONDS = 3.0;
     //Loading Scene: animation settings
@@ -308,25 +401,38 @@ public class Settings
     private static final double TITLEBAR_CLOSE_BREATHING_DURATION = 1.2;
     private static final double TITLEBAR_CLOSE_HOVER_DURATION = 0.3;
     private static final double TITLEBAR_CLOSE_FADE_OUT_DURATION = 0.8;
+    private static final String CSS_CLASS_CUSTOM_TITLE_BAR = "custom-title-bar";
+    private static final String CSS_CLASS_MAGIC_CLOSE_BTN = "magic-close-button";
+    private static final double TITLEBAR_GLOW_NORMAL = 0.5;
+    private static final double TITLEBAR_GLOW_HOVER = 0.9;
+    private static final double TITLEBAR_BREATHING_SCALE_FROM = 1.0;
+    private static final double TITLEBAR_BREATHING_SCALE_TO = 1.08;
+    private static final double TITLEBAR_HOVER_SCALE = 1.2;
+    private static final double TITLEBAR_CLICK_SHRINK_SCALE = 0.9;
+    private static final double TITLEBAR_LOGO_HOVER_SCALE = 1.15;
+    private static final int TITLEBAR_PARTICLE_EMITTER_SIZE = 40;
+    private static final int TITLEBAR_PARTICLE_NUM = 35;
+    private static final double TITLEBAR_PARTICLE_RADIUS = 3.0;
+    private static final double TITLEBAR_PARTICLE_LIFESPAN_SEC = 1.5;
+    private static final Color TITLEBAR_PARTICLE_COLOR = Color.GOLD;
+    private static final Color TITLEBAR_FADE_BG_COLOR = Color.BLACK;
     private static final String ERROR_MSG_TITLEBAR_LOGO = "Logo can't load...";
     private static final String BASE_PATH_TEXTURES = "/assets/textures/";
     //Effect component settings
     private static final String LINK_TO_CRASH_EFFECT = "effects/crashEffect.png";
     private static final int CRASH_EFFECT_COLS = 5;
-    private static final int CRASH_EFFECT_FRAME_WIDTH = 307; // Hier kannst du später deinen Bug fixen!
+    private static final int CRASH_EFFECT_FRAME_WIDTH = 307;
     private static final int CRASH_EFFECT_FRAME_HEIGHT = 1024;
     private static final int CRASH_EFFECT_NUM_FRAMES = 5;
     private static final double CRASH_EFFECT_DURATION_SEC = 0.5;
-    private static final double CRASH_EFFECT_TARGET_WIDTH = 128.0;
-    private static final double CRASH_EFFECT_TARGET_HEIGHT = 128.0;
+    private static final double CRASH_EFFECT_SCALE = 0.83;
+    private static final double PICKUP_EFFECT_SCALE = 0.41;
     private static final String LINK_TO_PICKUP_EFFECT = "effects/pickupEffect.png";
     private static final int PICKUP_EFFECT_COLS = 4;
     private static final int PICKUP_EFFECT_FRAME_WIDTH = 307;
     private static final int PICKUP_EFFECT_FRAME_HEIGHT = 1024;
     private static final int PICKUP_EFFECT_NUM_FRAMES = 5;
     private static final double PICKUP_EFFECT_DURATION_SEC = 0.3;
-    private static final double PICKUP_EFFECT_TARGET_WIDTH = 128.0;
-    private static final double PICKUP_EFFECT_TARGET_HEIGHT = 128.0;
     private static final int INVULNERABLE_ANIMATION_COLS = 5;
     private static final int INVULNERABLE_ANIMATION_FRAME_WIDTH = 307;
     private static final int INVULNERABLE_ANIMATION_FRAME_HEIGHT = 1024;
@@ -341,6 +447,19 @@ public class Settings
     private static final double SLOW_MOTION_ANIMATION_DURATION_SEC = 0.5;
     private static final double SLOW_MOTION_ANIMATION_TARGET_WIDTH = 128.0;
     private static final double SLOW_MOTION_ANIMATION_TARGET_HEIGHT = 128.0;
+    private static final String HITBOX_NAME_BARRIER = "MainBeam";
+    private static final int Z_INDEX_GAME = 100;
+    private static final int Z_INDEX_BACKGROUND = -1;
+    private static final int Z_INDEX_FOREGROUND = 200;
+    //projectiles
+    private static final double PROJECTILE_WOBBLE_AMPLITUDE = 150.0;
+    private static final double PROJECTILE_WOBBLE_FREQUENCY = 15.0;
+    private static final double PROJECTILE_ARC_GRAVITY = 300.0;
+    private static final double PROJECTILE_ROTATION_SPEED = 360.0;
+
+    //buffPowerup component
+    private static final double DESPAWN_X_BOUNDARY = 0.0;
+    private static final double DEFAULT_BUFF_DURATION_SECONDS = 1.0;
     //ExitCoordinator
     private static final String ERROR_MSG_SAVE_FAILED = "Error: Highscore or settings can't be safed!";
     //Highscore loader
@@ -354,6 +473,32 @@ public class Settings
     private static final String METADATA_FILE_NAME = "sync_metadata.saelly";
     private static final String LANG_KEY_UNKNOWN = "unknow"; // Aus deinem FXGL Localization Service
     private static final String SERVER_RESPONSE_SUCCESS = "Saved successfully!";
+    private static final String API_ACTION_GET = "?action=get";
+    private static final String API_ACTION_PING = "?action=ping";
+    private static final String FORMAT_API_SAVE = "action=save&name=%s&score=%d&place=%d&hash=%s";
+    private static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String HTTP_HEADER_URL_ENCODED = "application/x-www-form-urlencoded";
+    private static final String DELIMITER_SCORE_ENTRY = ";";
+    private static final String PREFIX_HASH = "HASH:";
+    private static final String FORMAT_DATE_TIME_SYNC = "dd.MM.yyyy HH:mm";
+    private static final String CRYPTO_ALGO_AES = "AES";
+    private static final String CRYPTO_ALGO_SHA256 = "SHA-256";
+    //MainMenu scene
+    private static final String RAW_KEY_SPACE = "SPACE";
+    private static final String RAW_KEY_ENTER = "ENTER";
+    private static final String LANG_KEY_SPACE = "key.space";
+    private static final String LANG_KEY_ENTER = "key.enter";
+    private static final String FALLBACK_MISSING_KEY = "Missing_key";
+    private static final String DISPLAY_LANG_GERMAN = "Deutsch"; //todo
+    private static final String DISPLAY_LANG_ENGLISH = "Englisch"; //todo
+    private static final double GHOST_CLICK_SHIELD_DURATION_MS = 100.0;
+    private static final double VOLUMEN_SLIDER_MIN = 0.0;
+    private static final double VOLUMEN_SLIDER_MAX = 1.0;
+    private static final double APP_LOADING_ANIMATION_DURATION_MS = 1000.0; //todo
+    private static final double APP_LOADING_ANIM_DOT_THRESHOLD1 = 6;
+    private static final double APP_LOADING_ANIM_DOT_THRESHOLD2 = 12;
+    private static final String FORMAT_MENU_LABEL_VALUE = "%s: %s";
+
 
     //Error massages
     private static final String ERR_MSG_SERVER_TIMEOUT = "[]Server not reachable... timeout...";
@@ -381,6 +526,7 @@ public class Settings
     private static final Color HITBOX_COLOR_BARRIER = Color.RED;
     private static final Color HITBOX_COLOR_BUFF = Color.WHITE;
     private static final Color HITBOX_COLOR_DEBUFF = Color.BLACK;
+    private static final Color HITBOX_COLOR_PROJECTILE = Color.MAGENTA;
     //WindowManager
     private static final double WINDOW_RESIZE_TOLERANCE = 1.0;
     //Custom Pause Menu
@@ -416,6 +562,7 @@ public class Settings
     private static final double DEFAULT_RESTORE_MUSIC_VOLUME = 0.5;
     private static final double DEFAULT_RESTORE_SOUND_VOLUME = 0.5;
     private static final double MAIN_MENU_DIM_OPACITY = 0.6; //60%
+    private static final String FORMAT_CORRUPTED_MESSAGE = "%s\n%s %s";
 
     // Animationen für Saelly
     private static final int PLAYER_ANIM_FRAMES_PER_ROW = 5;
@@ -444,6 +591,15 @@ public class Settings
     public static String getKeyGeneralSpeed() { return KEY_GENERAL_SPEED; }
     public static String getKeyIsCrashing() { return  KEY_IS_CRASHING;}
     public static String getKeyNextSpeedupScore() {return KEY_NEXT_SPEEDUP_SCORE;}
+    public static String getKeyCurrentBarrierGap() {return KEY_CURRENT_BARRIER_GAP;}
+
+    //FXGL KeyCode getter
+    public static KeyCode getDefaultKeyCodeWindowed() {return DEFAULT_KEYCODE_WINDOWED;}
+    public static KeyCode getDefaultKeyCodeBorderless() {return DEFAULT_KEYCODE_BORDERLESS;}
+    public static KeyCode getDefaultKeyCodeFullscreen() {return DEFAULT_KEYCODE_FULLSCREEN;}
+    public static KeyCode getDefaultKeyCodeJump() {return DEFAULT_KEYCODE_JUMP;}
+    public static KeyCode getDefaultKeyCodeRestart() {return DEFAULT_KEYCODE_RESTART;}
+    public static KeyCode getDefaultKeyCodeToggleDebug() {return DEFAULT_KEYCODE_TOGGLE_DEBUG;}
 
     //Init-Getter
     public static int getInitScore()
@@ -554,6 +710,7 @@ public class Settings
     public static double getPickupEffectOffsetY() { return PICKUP_EFFECT_OFFSET_Y; }
     public static double getSlowMotionOffsetX() { return SLOW_MOTION_OFFSET_X; }
     public static double getSlowMotionOffsetY() { return SLOW_MOTION_OFFSET_Y; }
+    public static double getUiLivesOffsetY() {return UI_LIVES_OFFSET_Y;}
 
     //Getter
     public static double getGameSpeed()
@@ -676,6 +833,8 @@ public class Settings
     {
         return BARRIER_SCALE_HEIGHT;
     }
+    public static double getBarrierHitboxWidthRatio() {return BARRIER_HITBOX_WIDTH_RATIO;}
+    public static double getBarrierHitboxHeightRatio() {return BARRIER_HITBOX_HEIGHT_RATIO;}
 
     //BuffPowerups
     public static double getInvulnerableDurationInSeconds()
@@ -736,7 +895,12 @@ public class Settings
     {
         return LINK_TO_INIT_LOADINGSCREEN_BACKGROUND_IMAGE;
     }
-
+    public static double getDefaultBuffDurationSeconds() {return BUFF_EFFECT_DURATION_SECONDS;}
+    public static double getBarrierGap() {return BARRIER_GAP;}
+    public static double getBuffShrinkDurationSec() {return BUFF_SHRINK_DURATION_SEC;}
+    public static double getBuffGapWiderDurationSec() {return BUFF_GAP_WIDER_DURATION_SEC;}
+    public static double getBuffShrinkScaleRatio() { return BUFF_SHRINK_SCALE_RATIO; }
+    public static double getBuffGapWiderRatio() { return BUFF_GAP_WIDER_RATIO; }
 
     //Links zu Bildern, Musik und Sounds - Getter
     public static String getLinkToBackgroundMusic()
@@ -871,37 +1035,29 @@ public class Settings
         return LINK_TO_UI_INTRO_BACKGROUND_IMAGE;
     }
     public static String getLinkToCss() { return LINK_TO_CSS; }
+    public static String getLinkToBottomBarrierImage() {return LINK_TO_BOTTOM_BARRIER_IMAGE;}
+    public static String getLinkToShrinkAnimation() {return LINK_TO_SHRINK_ANIMATION;}
+    public static String getLinkToShrinkActiveSound() {return LINK_TO_SHRINK_ACTIVE_SOUND;}
+    public static String getLinkToGapWiderAnimation() {return LINK_TO_GAP_WIDER_ANIMATION;}
+    public static String getLinkToGapWiderActiveSound() {return LINK_TO_GAP_WIDER_ACTIVE_SOUND;}
+    public static String getLinkToShrinkImage() { return LINK_TO_SHRINK_IMAGE; }
+    public static String getLinkToShrinkPickupSound() { return LINK_TO_SHRINK_PICKUP_SOUND; }
+    public static String getLinkToGapWiderImage() { return LINK_TO_GAP_WIDER_IMAGE; }
+    public static String getLinkToGapWiderPickupSound() { return LINK_TO_GAP_WIDER_PICKUP_SOUND; }
+    public static String getLinkToGapNarrowerImage() { return LINK_TO_GAP_NARROWER_IMAGE; }
+    public static String getLinkToGapNarrowerPickupSound() { return LINK_TO_GAP_NARROWER_PICKUP_SOUND; }
+    public static String getLinkToSpeedUpImage() { return LINK_TO_SPEED_UP_IMAGE; }
+    public static String getLinkToSpeedUpPickupSound() { return LINK_TO_SPEED_UP_PICKUP_SOUND; }
+    public static String getLinkToCloudImage() { return LINK_TO_CLOUD_IMAGE; }
 
     //Buff Settings getter
-    public static int getBuffAnimFramesPerRow()
-    {
-        return BUFF_ANIM_FRAMES_PER_ROW;
-    }
-    public static int getBuffAnimFrameWidth()
-    {
-        return BUFF_ANIM_FRAME_WIDTH;
-    }
-    public static int getBuffAnimFrameHeight()
-    {
-        return BUFF_ANIM_FRAME_HEIGHT;
-    }
-    public static int getBuffAnimStartFrame()
-    {
-        return BUFF_ANIM_START_FRAME;
-    }
-    public static int getBuffAnimEndFrame()
-    {
-        return BUFF_ANIM_END_FRAME;
-    }
-    public static double getBuffAnimDurationSeconds()
-    {
-        return BUFF_ANIM_DURATION_SECONDS;
-    }
-    public static double getBuffScaleFactor()
-    {
-        return BUFF_SCALE_FACTOR;
-    }
-
+    public static int getBuffAnimFramesPerRow() {return BUFF_ANIM_FRAMES_PER_ROW;}
+    public static int getBuffAnimFrameWidth() {return BUFF_ANIM_FRAME_WIDTH;}
+    public static int getBuffAnimFrameHeight() {return BUFF_ANIM_FRAME_HEIGHT;}
+    public static int getBuffAnimStartFrame() {return BUFF_ANIM_START_FRAME;}
+    public static int getBuffAnimEndFrame() {return BUFF_ANIM_END_FRAME;}
+    public static double getBuffAnimDurationSeconds() {return BUFF_ANIM_DURATION_SECONDS;}
+    public static double getBuffScaleFactor() {return BUFF_SCALE_FACTOR;}
 
     public static String getKeyIsDebuffActive() { return KEY_IS_DEBUFF_ACTIVE; }
     public static String getKeyPlaced() { return KEY_PLACED; }
@@ -913,8 +1069,15 @@ public class Settings
     public static String getMsgErrRoot() { return MSG_ERR_ROOT; }
     public static String getMsgErrScene() { return MSG_ERR_SCENE; }
     public static String getMsgSafeExit() { return MSG_SAFE_EXIT; }
+    public static String getFallbackLoadingTextEn() { return FALLBACK_LOADING_TEXT_EN; }
+    public static String getFallbackLoadingTextDe() { return FALLBACK_LOADING_TEXT_DE; }
     public static double getPowerupPaddingMultiplier() { return POWERUP_PADDING_MULTIPLIER; }
     public static double getLoadingAnimDelaySeconds() { return LOADING_ANIM_DELAY_SECONDS; }
+    public static String getCssClassNameInput() { return CSS_CLASS_NAME_INPUT; }
+    public static String getCssClassGameOverScreen() { return CSS_CLASS_GAME_OVER_SCREEN; }
+    public static String getCssClassGameOverTitle() { return CSS_CLASS_GAME_OVER_TITLE; }
+    public static String getCssClassLeaderboardBox() { return CSS_CLASS_LEADERBOARD_BOX; }
+    public static String getFormatGameoverLeaderboard() { return FORMAT_GAMEOVER_LEADERBOARD; }
 
     //Language keys
     public static String getLangKeyGameTitle() {return LANG_KEY_GAME_TITLE;}
@@ -1019,6 +1182,9 @@ public class Settings
     public static int getLoadingAnimColumns() { return LOADING_ANIM_COLUMNS; }
     public static int getLoadingAnimTotalFrames() { return LOADING_ANIM_TOTAL_FRAMES; }
     public static double getLoadingAnimDurationMillis() { return LOADING_ANIM_DURATION_MILLIS; }
+    public static double getAppLoadingAnimationDurationMs() {return APP_LOADING_ANIMATION_DURATION_MS;}
+    public static double getAppLoadingAnimDotThreshold1() {return  APP_LOADING_ANIM_DOT_THRESHOLD1;}
+    public static double getAppLoadingAnimDotThreshold2() {return APP_LOADING_ANIM_DOT_THRESHOLD2;}
     public static double getLoadingAnimViewSize() { return LOADING_ANIM_VIEW_SIZE; }
     public static double getLoadingTextSize() { return LOADING_TEXT_SIZE; }
     public static double getLoadingDotsDurationSeconds() { return LOADING_DOTS_DURATION_SECONDS; }
@@ -1045,30 +1211,24 @@ public class Settings
     public static int getCrashEffectFrameHeight() { return CRASH_EFFECT_FRAME_HEIGHT; }
     public static int getCrashEffectNumFrames() { return CRASH_EFFECT_NUM_FRAMES; }
     public static double getCrashEffectDurationSec() { return CRASH_EFFECT_DURATION_SEC; }
-    public static double getCrashEffectTargetWidth() { return CRASH_EFFECT_TARGET_WIDTH; }
-    public static double getCrashEffectTargetHeight() { return CRASH_EFFECT_TARGET_HEIGHT; }
     public static String getLinkToPickupEffect() { return LINK_TO_PICKUP_EFFECT; }
     public static int getPickupEffectCols() { return PICKUP_EFFECT_COLS; }
     public static int getPickupEffectFrameWidth() { return PICKUP_EFFECT_FRAME_WIDTH; }
     public static int getPickupEffectFrameHeight() { return PICKUP_EFFECT_FRAME_HEIGHT; }
     public static int getPickupEffectNumFrames() { return PICKUP_EFFECT_NUM_FRAMES; }
     public static double getPickupEffectDurationSec() { return PICKUP_EFFECT_DURATION_SEC; }
-    public static double getPickupEffectTargetWidth() { return PICKUP_EFFECT_TARGET_WIDTH; }
-    public static double getPickupEffectTargetHeight() { return PICKUP_EFFECT_TARGET_HEIGHT; }
+    public static double getCrashEffectScale() { return CRASH_EFFECT_SCALE; }
+    public static double getPickupEffectScale() { return PICKUP_EFFECT_SCALE; }
     public static int getInvulnerableAnimationCols() { return INVULNERABLE_ANIMATION_COLS; }
     public static int getInvulnerableAnimationFrameWidth() { return INVULNERABLE_ANIMATION_FRAME_WIDTH; }
     public static int getInvulnerableAnimationFrameHeight() { return INVULNERABLE_ANIMATION_FRAME_HEIGHT; }
     public static int getInvulnerableAnimationNumFrames() { return INVULNERABLE_ANIMATION_NUM_FRAMES; }
     public static double getInvulnerableAnimationDurationSec() { return INVULNERABLE_ANIMATION_DURATION_SEC; }
-    public static double getInvulnerableAnimationTargetWidth() { return INVULNERABLE_ANIMATION_TARGET_WIDTH; }
-    public static double getInvulnerableAnimationTargetHeight() { return INVULNERABLE_ANIMATION_TARGET_HEIGHT; }
     public static int getSlowMotionAnimationCols() { return SLOW_MOTION_ANIMATION_COLS; }
     public static int getSlowMotionAnimationFrameWidth() { return SLOW_MOTION_ANIMATION_FRAME_WIDTH; }
     public static int getSlowMotionAnimationFrameHeight() { return SLOW_MOTION_ANIMATION_FRAME_HEIGHT; }
     public static int getSlowMotionAnimationNumFrames() { return SLOW_MOTION_ANIMATION_NUM_FRAMES; }
     public static double getSlowMotionAnimationDurationSec() { return SLOW_MOTION_ANIMATION_DURATION_SEC; }
-    public static double getSlowMotionAnimationTargetWidth() { return SLOW_MOTION_ANIMATION_TARGET_WIDTH; }
-    public static double getSlowMotionAnimationTargetHeight() { return SLOW_MOTION_ANIMATION_TARGET_HEIGHT; }
     public static String getErrorMsgSaveFailed() { return ERROR_MSG_SAVE_FAILED; }
     public static String getHighscoreServerUrl() { return HIGHSCORE_SERVER_URL; }
     public static String getHighscoreSecretKey() { return HIGHSCORE_SECRET_KEY; }
@@ -1080,6 +1240,52 @@ public class Settings
     public static String getMetadataFileName() { return METADATA_FILE_NAME; }
     public static String getLangKeyUnknown() { return LANG_KEY_UNKNOWN; }
     public static String getServerResponseSuccess() { return SERVER_RESPONSE_SUCCESS; }
+    public static String getApiActionGet() { return API_ACTION_GET; }
+    public static String getApiActionPing() { return API_ACTION_PING; }
+    public static String getFormatApiSave() { return FORMAT_API_SAVE; }
+    public static String getHttpHeaderContentType() { return HTTP_HEADER_CONTENT_TYPE; }
+    public static String getHttpHeaderUrlEncoded() { return HTTP_HEADER_URL_ENCODED; }
+    public static String getDelimiterScoreEntry() { return DELIMITER_SCORE_ENTRY; }
+    public static String getPrefixHash() { return PREFIX_HASH; }
+    public static String getFormatDateTimeSync() { return FORMAT_DATE_TIME_SYNC; }
+    public static String getCryptoAlgoAes() { return CRYPTO_ALGO_AES; }
+    public static String getCryptoAlgoSha256() { return CRYPTO_ALGO_SHA256; }
+    public static String getRawKeySpace() {return RAW_KEY_SPACE;}
+    public static String getRawKeyEnter() {return RAW_KEY_ENTER;}
+    public static String getLangKeySpace() {return LANG_KEY_SPACE;}
+    public static String getLangKeyEnter() {return LANG_KEY_ENTER;}
+    public static String getFallbackMissingKey() {return FALLBACK_MISSING_KEY;}
+    public static String getDisplayLangGerman() {return DISPLAY_LANG_GERMAN;}
+    public static String getDisplayLangEnglish() {return DISPLAY_LANG_ENGLISH;}
+    public static double getGhostClickShieldDurationMs() {return GHOST_CLICK_SHIELD_DURATION_MS;}
+    public static double getVolumeSliderMin() {return VOLUMEN_SLIDER_MIN;}
+    public static double getVolumeSliderMax() {return VOLUMEN_SLIDER_MAX;}
+    public static double getDespawnXBoundary() {return DESPAWN_X_BOUNDARY;}
+    public static String getHitboxNameBarrier() { return HITBOX_NAME_BARRIER; }
+    public static int getZIndexGame() { return Z_INDEX_GAME; }
+    public static int getzIndexBackground() {return Z_INDEX_BACKGROUND;}
+    public static int getZIndexForeground() { return Z_INDEX_FOREGROUND; }
+    public static double getParallaxFactorBackground() { return PARALLAX_FACTOR_BACKGROUND; }
+    public static double getParallaxFactorForeground() { return PARALLAX_FACTOR_FOREGROUND; }
+    public static double getDarkMagicHitboxOffsetX() { return DARK_MAGIC_HITBOX_OFFSET_X; }
+    public static double getDarkMagicHitboxOffsetY() { return DARK_MAGIC_HITBOX_OFFSET_Y; }
+    public static int getLoadingAnimMaxDots() { return LOADING_ANIM_MAX_DOTS; }
+    public static String getFormatMenuLabelValue() { return FORMAT_MENU_LABEL_VALUE; }
+    public static String getCssClassCustomTitleBar() { return CSS_CLASS_CUSTOM_TITLE_BAR; }
+    public static String getCssClassMagicCloseBtn() { return CSS_CLASS_MAGIC_CLOSE_BTN; }
+    public static double getTitlebarGlowNormal() { return TITLEBAR_GLOW_NORMAL; }
+    public static double getTitlebarGlowHover() { return TITLEBAR_GLOW_HOVER; }
+    public static double getTitlebarBreathingScaleFrom() { return TITLEBAR_BREATHING_SCALE_FROM; }
+    public static double getTitlebarBreathingScaleTo() { return TITLEBAR_BREATHING_SCALE_TO; }
+    public static double getTitlebarHoverScale() { return TITLEBAR_HOVER_SCALE; }
+    public static double getTitlebarClickShrinkScale() { return TITLEBAR_CLICK_SHRINK_SCALE; }
+    public static double getTitlebarLogoHoverScale() { return TITLEBAR_LOGO_HOVER_SCALE; }
+    public static int getTitlebarParticleEmitterSize() { return TITLEBAR_PARTICLE_EMITTER_SIZE; }
+    public static int getTitlebarParticleNum() { return TITLEBAR_PARTICLE_NUM; }
+    public static double getTitlebarParticleRadius() { return TITLEBAR_PARTICLE_RADIUS; }
+    public static double getTitlebarParticleLifespanSec() { return TITLEBAR_PARTICLE_LIFESPAN_SEC; }
+    public static Color getTitlebarParticleColor() { return TITLEBAR_PARTICLE_COLOR; }
+    public static Color getTitlebarFadeBgColor() { return TITLEBAR_FADE_BG_COLOR; }
 
     //Error massages
     public static String getErrMsgServerTimeout() { return ERR_MSG_SERVER_TIMEOUT; }
@@ -1106,6 +1312,7 @@ public class Settings
     public static Color getHitboxColorBarrier() { return HITBOX_COLOR_BARRIER; }
     public static Color getHitboxColorBuff() { return HITBOX_COLOR_BUFF; }
     public static Color getHitboxColorDebuff() { return HITBOX_COLOR_DEBUFF; }
+    public static Color getHitboxColorProjectile() { return HITBOX_COLOR_PROJECTILE; }
     public static double getPhysicsLagThreshold() { return PHYSICS_LAG_THRESHOLD; }
     public static double getPhysicsTargetNormalTpf() { return PHYSICS_TARGET_NORMAL_TPF; }
     public static double getPlayerAnimTpfLimit() { return PLAYER_ANIM_TPF_LIMIT; }
@@ -1121,6 +1328,13 @@ public class Settings
     public static String getCssClassScrollPane() { return CSS_CLASS_SCROLL_PANE; }
     public static String getCssClassBtnWaiting() { return CSS_CLASS_BTN_WAITING; }
     public static String getCssClassCreditsText() { return CSS_CLASS_CREDITS_TEXT; }
+    public static String getCssClassScoreUi() {return CSS_CLASS_SCORE_UI;}
+    public static String getCssClassLivesUi() {return CSS_CLASS_LIVES_UI;}
+    public static String getCssClassDimOverlay() {return CSS_CLASS_DIM_OVERLAY;}
+    public static String getCssClassLoadingText() {return CSS_CLASS_LOADING_TEXT;}
+    public static String getCssClassLeaderboardNormal() {return CSS_CLASS_LEADERBOARD_NORMAL;}
+    public static String getCssClassLeaderboardGray() {return CSS_CLASS_LEADERBOARD_GRAY;}
+    public static String getCssClassGameOverInstruction() {return CSS_CLASS_GAME_OVER_INSTRUCTION;}
     public static String getPrefsKeyMusicVol() { return PREFS_KEY_MUSIC_VOL; }
     public static String getPrefsKeySoundVol() { return PREFS_KEY_SOUND_VOL; }
     public static String getPrefsKeyBindingPrefix() { return PREFS_KEY_BINDING_PREFIX; }
@@ -1144,6 +1358,47 @@ public class Settings
     public static double getMainMenuDimOpacity() {return MAIN_MENU_DIM_OPACITY;}
     public static double getDefaultRestoreMusicVolume() {return DEFAULT_RESTORE_MUSIC_VOLUME;}
     public static double getDefaultRestoreSoundVolume() {return DEFAULT_RESTORE_SOUND_VOLUME;}
+    public static double getSlowMotionAnimationScale() {return SLOW_MOTION_ANIMATION_SCALE;}
+    public static double getInvulnerableAnimationScale() {return INVULNERABLE_ANIMATION_SCALE;}
+    public static double getInvulnerableOffsetX() {return INVULNERABLE_OFFSET_X;}
+    public static double getInvulnerableOffsetY() {return INVULNERABLE_OFFSET_Y;}
+    public static String getKeyActiveBuffImagePath() {return KEY_ACTIVE_BUFF_IMAGE_PATH;}
+    public static String getInitActiveBuffImagePath() {return INIT_ACTIVE_BUFF_IMAGE_PATH;}
+    public static double getBuffSpawnChance() { return BUFF_SPAWN_CHANCE; }
+    public static double getDebuffSpawnChance() { return DEBUFF_SPAWN_CHANCE; }
+    public static double getShrinkBuffDurationSec() { return SHRINK_BUFF_DURATION_SEC; }
+    public static double getGapWiderBuffDurationSec() { return GAP_WIDER_BUFF_DURATION_SEC; }
+    public static double getGapNarrowerDebuffDurationSec() { return GAP_NARROWER_DEBUFF_DURATION_SEC; }
+    public static double getSpeedUpDebuffDurationSec() { return SPEED_UP_DEBUFF_DURATION_SEC; }
+    public static double getSpeedUpDebuffRatio() { return SPEED_UP_DEBUFF_RATIO; }
+    public static String getLinkToDarkMagicImage() { return LINK_TO_DARK_MAGIC_IMAGE; }
+    public static String getLinkToShootSound() { return LINK_TO_SHOOT_SOUND; }
+    public static int getDarkMagicWidth() { return DARK_MAGIC_WIDTH; }
+    public static int getDarkMagicHeight() { return DARK_MAGIC_HEIGHT; }
+    public static double getDarkMagicSpeed() { return DARK_MAGIC_SPEED; }
+    public static double getDarkMagicCooldownSec() { return DARK_MAGIC_COOLDOWN_SEC; }
+    public static double getDarkMagicHitboxWidth() { return DARK_MAGIC_HITBOX_WIDTH; }
+    public static double getDarkMagicHitboxHeight() { return DARK_MAGIC_HITBOX_HEIGHT; }
+    public static String getCssClassLoadingProgressBar() { return CSS_CLASS_LOADING_PROGRESS_BAR; }
+    public static String getFormatCorruptedMessage() { return FORMAT_CORRUPTED_MESSAGE; }
+    public static double getProjectileWobbleAmplitude() { return PROJECTILE_WOBBLE_AMPLITUDE; }
+    public static double getProjectileWobbleFrequency() { return PROJECTILE_WOBBLE_FREQUENCY; }
+    public static double getProjectileArcGravity() { return PROJECTILE_ARC_GRAVITY; }
+    public static double getProjectileRotationSpeed() { return PROJECTILE_ROTATION_SPEED; }
+    public static int getDarkMagicDamage() { return DARK_MAGIC_DAMAGE; }
+    public static double getDarkMagicRange() { return DARK_MAGIC_RANGE; }
+    public static String getHitboxNameProjectile() { return HITBOX_NAME_PROJECTILE; }
+    public static double getDebuffGapNarrowerRatio() { return DEBUFF_GAP_NARROWER_RATIO; }
+    public static double getCloudSpawnIntervalSec() { return CLOUD_SPAWN_INTERVAL_SEC; }
+    public static double getCloudScaleMin() { return CLOUD_SCALE_MIN; }
+    public static double getCloudScaleMax() { return CLOUD_SCALE_MAX; }
+    public static double getCloudSpawnYMin() { return CLOUD_SPAWN_Y_MIN; }
+    public static double getCloudSpawnXOffset() { return CLOUD_SPAWN_X_OFFSET; }
+    public static double getCloudOpacity() { return CLOUD_OPACITY; }
+    public static double getInvisibleBarrierThickness() { return INVISIBLE_BARRIER_THICKNESS; }
+    public static double getPowerupSpawnXOffset() { return POWERUP_SPAWN_X_OFFSET; }
+    public static String getErrMsgBuffImageNotFound() { return ERR_MSG_BUFF_IMAGE_NOT_FOUND; }
+
 
     //Player animation getter
     public static int getPlayerAnimFramesPerRow() { return PLAYER_ANIM_FRAMES_PER_ROW; }
@@ -1153,39 +1408,7 @@ public class Settings
     public static int getPlayerAnimJumpStart() { return PLAYER_ANIM_JUMP_START; }
     public static int getPlayerAnimJumpEnd() { return PLAYER_ANIM_JUMP_END; }
     public static double getPlayerJumpAnimThreshold() { return PLAYER_JUMP_ANIM_THRESHOLD; }
-
-    //Setter
-    public static void setGameSpeed(double gameSpeed)
-    {
-        Settings.gameSpeed = gameSpeed;
-    }
-    public static void setBarrierSpeed(double barrierSpeed)
-    {
-        Settings.barrierSpeed = barrierSpeed;
-    }
-    public static void setGravity(double gravity)
-    {
-        Settings.gravity = gravity;
-    }
-    public static void setScoreMulti(int scoreMulti)
-    {
-        Settings.scoreMulti = scoreMulti;
-    }
-    public static void setWindowTitle(String windowTitle)
-    {
-        Settings.windowTitle = windowTitle;
-    }
-    public static void setSpawnDurationBarrier(double spawnDurationBarrier)
-    {
-        Settings.spawnDurationBarrier = spawnDurationBarrier;
-    }
-    public static void setBarriersToSpeedupTheGame(int barriersToSpeedupTheGame)
-    {
-        Settings.barriersToSpeedupTheGame = barriersToSpeedupTheGame;
-    }
-    public static void setPlacedValue(int placedValue)
-    {
-        Settings.placedValue = placedValue;
-    }
-
+    public static double getPlayerCollisionBoxOffsetX() {return PLAYER_COLLISION_BOX_OFFSET_X;}
+    public static double getPlayerCollisionBoxOffsetY() {return PLAYER_COLLISION_BOX_OFFSET_Y;}
+    public static double getPlayerBounceMargin() { return PLAYER_BOUNCE_MARGIN; }
 }

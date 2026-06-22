@@ -11,6 +11,7 @@ import javafx.animation.Animation;
 import javafx.animation.PauseTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -38,7 +39,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-public class CustomMainMenuScene extends FXGLMenu {
+public class CustomMainMenuScene extends FXGLMenu
+{
     private WindowMode currentWindowMode = WindowMode.WINDOWED;
     private Language currentLanguage;
 
@@ -270,7 +272,7 @@ public class CustomMainMenuScene extends FXGLMenu {
         textMusic.getStyleClass().add(Settings.getCssClassMagicalText());
         textMusic.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuMusic()));
 
-        Slider musicSlider = new Slider(0, 1, FXGL.getSettings().getGlobalMusicVolume());
+        Slider musicSlider = new Slider(Settings.getVolumeSliderMin(), Settings.getVolumeSliderMax(), FXGL.getSettings().getGlobalMusicVolume());
         musicSlider.setMaxWidth(Settings.getMenuSliderMaxWidth());
         musicSlider.getStyleClass().add(Settings.getCssClassSlider());
         FXGL.getSettings().globalMusicVolumeProperty().bindBidirectional(musicSlider.valueProperty());
@@ -280,7 +282,7 @@ public class CustomMainMenuScene extends FXGLMenu {
         textSound.getStyleClass().add(Settings.getCssClassMagicalText());
         textSound.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuSound()));
 
-        Slider soundSlider = new Slider(0, 1, FXGL.getSettings().getGlobalSoundVolume());
+        Slider soundSlider = new Slider(Settings.getVolumeSliderMin(), Settings.getVolumeSliderMax(), FXGL.getSettings().getGlobalSoundVolume());
         soundSlider.setMaxWidth(Settings.getMenuSliderMaxWidth());
         soundSlider.getStyleClass().add(Settings.getCssClassSlider());
         FXGL.getSettings().globalSoundVolumeProperty().bindBidirectional(soundSlider.valueProperty());
@@ -293,8 +295,8 @@ public class CustomMainMenuScene extends FXGLMenu {
         {
             String label = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyMenuLanguage());
             Language currentLang = FXGL.getLocalizationService().selectedLanguageProperty().get();
-            String langName = (currentLang == Language.GERMAN) ? "Deutsch" : "English";
-            return label + ": " + langName;
+            String langName = (currentLang == Language.GERMAN) ? Settings.getDisplayLangGerman() : Settings.getDisplayLangEnglish();
+            return String.format(Settings.getFormatMenuLabelValue(), label, langName);
         }, FXGL.getLocalizationService().selectedLanguageProperty()));
 
         Button btnWindowMode = new Button();
@@ -317,7 +319,7 @@ public class CustomMainMenuScene extends FXGLMenu {
 
             String label = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyMenuMode());
             String value = FXGL.getLocalizationService().getLocalizedString(modeI18nKey);
-            btnWindowMode.setText(label + ": " + value);
+            btnWindowMode.setText(String.format(Settings.getFormatMenuLabelValue(), label, value));
         };
 
         updateModeText.run();
@@ -533,7 +535,11 @@ public class CustomMainMenuScene extends FXGLMenu {
         {
             HighscoreLoader hl = app.getHighscoreL();
             String timestamp = (hl != null) ? hl.getLastSyncTimestamp() : "";
-            return FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyCorruptedFile()) + "\n" + FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyLastSync()) + " " + timestamp;
+
+            String msgCorrupted = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyCorruptedFile());
+            String msgSync = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyLastSync());
+
+            return String.format(Settings.getFormatCorruptedMessage(), msgCorrupted, msgSync, timestamp);
         }, FXGL.getLocalizationService().selectedLanguageProperty()));
 
         Button btnCorruptedOk = new Button();
@@ -703,7 +709,7 @@ public class CustomMainMenuScene extends FXGLMenu {
         if (btnExit != null)
         {
             btnExit.setDisable(true);
-            PauseTransition shield = new PauseTransition(Duration.millis(100));
+            PauseTransition shield = new PauseTransition(Duration.millis(Settings.getGhostClickShieldDurationMs()));
             shield.setOnFinished(ev -> btnExit.setDisable(false));
             shield.play();
         }
@@ -824,17 +830,33 @@ public class CustomMainMenuScene extends FXGLMenu {
             String currentKey = prefs.get(Settings.getPrefsKeyBindingPrefix() + actionName, defaultKeyName);
             String displayKey = currentKey;
 
-            if (currentKey.equals("SPACE")) displayKey = FXGL.getLocalizationService().getLocalizedString("key.space");
-            else if (currentKey.equals("ENTER"))
-                displayKey = FXGL.getLocalizationService().getLocalizedString("key.enter");
+            if (currentKey.equals(Settings.getRawKeySpace()))
+            {
+                displayKey = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeySpace());
+            }
+            else if (currentKey.equals(Settings.getRawKeyEnter()))
+            {
+                displayKey = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyEnter());
+            }
 
-            if (displayKey.contains("Missing_key")) displayKey = currentKey;
+            if (displayKey.contains(Settings.getFallbackMissingKey()))
+            {
+                displayKey = currentKey;
+            }
 
             btnKey.setText(displayKey);
         };
 
         updateBtnText.run();
         FXGL.getLocalizationService().selectedLanguageProperty().addListener((obs, o, n) -> updateBtnText.run());
+
+        prefs.addPreferenceChangeListener(evt ->
+        {
+            if (evt.getKey().equals(Settings.getPrefsKeyBindingPrefix() + actionName))
+            {
+                Platform.runLater(updateBtnText);
+            }
+        });
 
         btnKey.setOnAction(e ->
         {

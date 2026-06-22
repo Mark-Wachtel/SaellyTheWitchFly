@@ -41,43 +41,39 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-public class CustomTitleBar extends HBox 
+public class CustomTitleBar extends HBox
 {
-
 	public static final double TITLE_BAR_HEIGHT = Settings.getStandardTitlebarHeight();
-	
+
 	private double dragOffsetX;
 	private double dragOffsetY;
-	
 	private Runnable onDragStart;
 	private Runnable onDragEnd;
 	private Runnable onLogoClicked;
 	private Runnable onCloseClicked;
 
 	private StackPane logoBox;
-	
+
 	public CustomTitleBar(String logoResourcePath)
 	{
-		this.getStyleClass().add("custom-title-bar");
+		this.getStyleClass().add(Settings.getCssClassCustomTitleBar());
 		setPrefHeight(TITLE_BAR_HEIGHT);
 		setMinHeight(TITLE_BAR_HEIGHT);
 		setMaxHeight(TITLE_BAR_HEIGHT);
-		
+
 		setAlignment(Pos.CENTER_LEFT);
 		int pad = Settings.getTitlebarPadding();
 		setPadding(new Insets(0,pad,0,pad));
 		setSpacing(pad);
 
-		getStyleClass().add("custom-title-bar");
-
 		Region left = buildLeftLogo(logoResourcePath);
 		Region center = buildCenterTitle();
 		Group right = buildRightButton();
-		
+
 		HBox.setHgrow(center, Priority.ALWAYS);
-		
+
 		getChildren().addAll(left,center,right);
-		
+
 		setupDragBehavior();
 	}
 
@@ -86,7 +82,6 @@ public class CustomTitleBar extends HBox
 		logoBox = new StackPane();
 		logoBox.setPrefSize(Settings.getLogoPrefSizeWidth(), Settings.getLogoPrefSizeHeight());
 		logoBox.setMinSize(Settings.getLogoPrefSizeWidth(), Settings.getLogoPrefSizeHeight());
-
 		try
 		{
 			Image img = FXGL.image(logoResourcePath);
@@ -98,12 +93,12 @@ public class CustomTitleBar extends HBox
 		}
 		catch(Exception e)
 		{
-			System.err.println("[TitleBar] Fehler beim Laden des Logos!");
+			System.err.println(Settings.getErrorMsgTitlebarLogo());
 		}
 
 		return logoBox;
 	}
-	
+
 	private Region buildCenterTitle()
 	{
 		StackPane box = new StackPane();
@@ -123,19 +118,25 @@ public class CustomTitleBar extends HBox
 		int size = Settings.getTitlebarCloseBtnSize();
 		Line line1 = new Line(0,0,size,size);
 		Line line2 = new Line(size,0,0,size);
-		line1.getStyleClass().add("magic-close-button");
-		line2.getStyleClass().add("magic-close-button");
+
+		line1.getStyleClass().add(Settings.getCssClassMagicCloseBtn());
+		line2.getStyleClass().add(Settings.getCssClassMagicCloseBtn());
+
 		magicX.getChildren().addAll(line1,line2);
 		magicX.setCursor(Cursor.HAND);
 		magicX.setFocusTraversable(false);
-		Glow glow = new Glow(0.5);
+
+		Glow glow = new Glow(Settings.getTitlebarGlowNormal());
 		magicX.setEffect(glow);
 
 		double breathDur = Settings.getTitlebarCloseBreathingDuration();
-
 		ScaleTransition breathing = new ScaleTransition(Duration.seconds(breathDur), magicX);
-		breathing.setFromX(1.0); breathing.setFromY(1.0);
-		breathing.setToX(1.08); breathing.setToY(1.08);
+
+		breathing.setFromX(Settings.getTitlebarBreathingScaleFrom());
+		breathing.setFromY(Settings.getTitlebarBreathingScaleFrom());
+		breathing.setToX(Settings.getTitlebarBreathingScaleTo());
+		breathing.setToY(Settings.getTitlebarBreathingScaleTo());
+
 		breathing.setAutoReverse(true);
 		breathing.setCycleCount(Animation.INDEFINITE);
 		breathing.play();
@@ -145,20 +146,20 @@ public class CustomTitleBar extends HBox
 		{
 			breathing.pause();
 			ScaleTransition st = new ScaleTransition(Duration.seconds(hoverDur), magicX);
-			st.setToX(1.2);
-			st.setToY(1.2);
+			st.setToX(Settings.getTitlebarHoverScale());
+			st.setToY(Settings.getTitlebarHoverScale());
 			st.play();
-			glow.setLevel(0.9);
+			glow.setLevel(Settings.getTitlebarGlowHover());
 		});
 
 		magicX.setOnMouseExited(e ->
 		{
 			ScaleTransition st = new ScaleTransition(Duration.seconds(hoverDur), magicX);
-			st.setToX(1.0);
-			st.setToY(1.0);
+			st.setToX(Settings.getTitlebarBreathingScaleFrom());
+			st.setToY(Settings.getTitlebarBreathingScaleFrom());
 			st.setOnFinished(ev -> breathing.play());
 			st.play();
-			glow.setLevel(0.5);
+			glow.setLevel(Settings.getTitlebarGlowNormal());
 		});
 
 		magicX.setOnMouseClicked(e ->
@@ -167,32 +168,32 @@ public class CustomTitleBar extends HBox
 
 				breathing.stop();
 
-				ScaleTransition shrink = new ScaleTransition(Duration.seconds(0.05), magicX);
-				shrink.setToX(0.9);
-				shrink.setToY(0.9);
+				ScaleTransition shrink = new ScaleTransition(Duration.seconds(Settings.getTitlebarLogoClickDuration()), magicX);
+				shrink.setToX(Settings.getTitlebarClickShrinkScale());
+				shrink.setToY(Settings.getTitlebarClickShrinkScale());
 
-				ScaleTransition grow = new ScaleTransition(Duration.seconds(0.05), magicX);
-				grow.setToX(1.2);
-				grow.setToY(1.2);
+				ScaleTransition grow = new ScaleTransition(Duration.seconds(Settings.getTitlebarLogoClickDuration()), magicX);
+				grow.setToX(Settings.getTitlebarHoverScale());
+				grow.setToY(Settings.getTitlebarHoverScale());
 
 				SequentialTransition clickAnim = new SequentialTransition(shrink, grow);
 				clickAnim.setOnFinished(event -> {
 
-					var emitter = ParticleEmitters.newExplosionEmitter(40);
-					emitter.setSourceImage(new Circle(3, Color.GOLD).snapshot(null, null));
-					emitter.setNumParticles(35);
+					var emitter = ParticleEmitters.newExplosionEmitter(Settings.getTitlebarParticleEmitterSize());
+					emitter.setSourceImage(new Circle(Settings.getTitlebarParticleRadius(), Settings.getTitlebarParticleColor()).snapshot(null, null));
+					emitter.setNumParticles(Settings.getTitlebarParticleNum());
 
 					Entity particleEntity = FXGL.entityBuilder()
 							.at(e.getSceneX(), e.getSceneY())
 							.with(new ParticleComponent(emitter))
-							.with(new ExpireCleanComponent(Duration.seconds(1.5)))
+							.with(new ExpireCleanComponent(Duration.seconds(Settings.getTitlebarParticleLifespanSec())))
 							.buildAndAttach();
 
 					FXGL.getGameScene().addUINode(particleEntity.getViewComponent().getParent());
 					magicX.setVisible(false);
 
 					var wholeScene = getScene().getRoot();
-					getScene().setFill(Color.BLACK);
+					getScene().setFill(Settings.getTitlebarFadeBgColor());
 
 					FadeTransition fadeOut = new FadeTransition(Duration.seconds(Settings.getTitlebarCloseFadeOutDuration()), wholeScene);
 					fadeOut.setToValue(0.0);
@@ -202,14 +203,13 @@ public class CustomTitleBar extends HBox
 				});
 				clickAnim.play();
 			}});
-
 		return magicX;
 	}
-	
+
 	private void setupDragBehavior()
 	{
 		setCursor(Cursor.MOVE);
-		
+
 		setOnMousePressed(e -> {
 			if(e.getTarget() instanceof Button) return;
 			if(getScene() != null && getScene().getWindow() != null)
@@ -219,8 +219,7 @@ public class CustomTitleBar extends HBox
 			}
 			if(onDragStart != null) onDragStart.run();
 		});
-		
-		setOnMouseDragged(e -> { 
+		setOnMouseDragged(e -> {
 			if(e.getTarget() instanceof Button) return;
 			if(getScene() != null && getScene().getWindow() != null)
 			{
@@ -229,7 +228,6 @@ public class CustomTitleBar extends HBox
 				window.setY(e.getScreenY() - dragOffsetY);
 			}
 		});
-		
 		setOnMouseReleased (e -> {
 			if(onDragEnd != null) onDragEnd.run();
 		});
@@ -245,7 +243,6 @@ public class CustomTitleBar extends HBox
 
 	public void setOnLogoClicked(Runnable onLogoClicked) {
 		this.onLogoClicked = onLogoClicked;
-
 		if (this.onLogoClicked != null && logoBox != null)
 		{
 			logoBox.setCursor(Cursor.HAND);
@@ -255,16 +252,15 @@ public class CustomTitleBar extends HBox
 			logoBox.setOnMouseEntered(e ->
 			{
 				ScaleTransition st = new ScaleTransition(Duration.seconds(animDur), logoBox);
-				st.setToX(1.15);
-				st.setToY(1.15);
+				st.setToX(Settings.getTitlebarLogoHoverScale());
+				st.setToY(Settings.getTitlebarLogoHoverScale());
 				st.play();
 			});
-
 			logoBox.setOnMouseExited(e ->
 			{
 				ScaleTransition st = new ScaleTransition(Duration.seconds(animDur), logoBox);
-				st.setToX(1.0);
-				st.setToY(1.0);
+				st.setToX(Settings.getTitlebarBreathingScaleFrom());
+				st.setToY(Settings.getTitlebarBreathingScaleFrom());
 				st.play();
 			});
 
@@ -274,12 +270,12 @@ public class CustomTitleBar extends HBox
 					double clickDur = Settings.getTitlebarLogoClickDuration();
 
 					ScaleTransition shrink = new ScaleTransition(Duration.seconds(clickDur), logoBox);
-					shrink.setToX(0.9);
-					shrink.setToY(0.9);
+					shrink.setToX(Settings.getTitlebarClickShrinkScale());
+					shrink.setToY(Settings.getTitlebarClickShrinkScale());
 
 					ScaleTransition grow = new ScaleTransition(Duration.seconds(clickDur), logoBox);
-					grow.setToX(1.15);
-					grow.setToY(1.15);
+					grow.setToX(Settings.getTitlebarLogoHoverScale());
+					grow.setToY(Settings.getTitlebarLogoHoverScale());
 
 					SequentialTransition clickAnim = new SequentialTransition(shrink, grow);
 					clickAnim.setOnFinished(event -> this.onLogoClicked.run());
@@ -293,8 +289,4 @@ public class CustomTitleBar extends HBox
 	public void setOnCloseClicked(Runnable onCloseClicked) {
 		this.onCloseClicked = onCloseClicked;
 	}
-	
-	
-	
-	
 }

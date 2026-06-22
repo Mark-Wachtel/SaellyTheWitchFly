@@ -55,7 +55,7 @@ public class CustomLoadingScene extends LoadingScene
         int frameHeight = Settings.getLoadingAnimFrameHeight();
         animImageView.setViewport(new Rectangle2D(0, 0, frameWidth, frameHeight));
 
-        animationTimeline = new Timeline(new KeyFrame(Duration.millis(60), event -> {
+        animationTimeline = new Timeline(new KeyFrame(Duration.millis(Settings.getLoadingAnimDurationMillis()), event -> {
             int totalFrames = Settings.getLoadingAnimTotalFrames();
             int columns = Settings.getLoadingAnimColumns();
 
@@ -73,21 +73,14 @@ public class CustomLoadingScene extends LoadingScene
 
         Preferences prefs = Preferences.userNodeForPackage(SaellyApp.class);
         String savedLang = prefs.get(Settings.getPrefsKeyLanguage(), Settings.getLangGerman());
-        String baseText = "";
+        String baseText = savedLang.equals(Settings.getLangEnglish()) ? Settings.getFallbackLoadingTextEn() : Settings.getFallbackLoadingTextDe();
 
-        if (savedLang.equals(Settings.getLangEnglish()))
-        {
-            baseText = "loading";
-        }
-        else
-        {
-            baseText = "Wird geladen";
-        }
         final String bText = baseText;
-        loadingText = FXGL.getUIFactoryService().newText(baseText, Color.WHITE, Settings.getLoadingTextSize());
+        loadingText = FXGL.getUIFactoryService().newText(baseText, Color.TRANSPARENT, Settings.getLoadingTextSize()); // Textfarbe wird von CSS übernommen!
+        loadingText.getStyleClass().add(Settings.getCssClassLoadingText());
 
         dotsTimeline = new Timeline(new KeyFrame(Duration.seconds(Settings.getLoadingDotsDurationSeconds()), event -> {
-            dotCount = (dotCount + 1) % 4;
+            dotCount = (dotCount + 1) % Settings.getLoadingAnimMaxDots();
             String dots = ".".repeat(dotCount);
             loadingText.setText(bText + dots);
         }));
@@ -97,7 +90,7 @@ public class CustomLoadingScene extends LoadingScene
         progressBar.setPrefWidth(width * Settings.getLoadingBarWidthRatio());
         progressBar.setPrefHeight(Settings.getLoadingBarHeight());
         progressBar.setProgress(-1.0);
-        progressBar.getStyleClass().add("loading-progress-bar");
+        progressBar.getStyleClass().add(Settings.getCssClassLoadingProgressBar());
 
         VBox container = new VBox(Settings.getLoadingVBoxSpacing(), animImageView, loadingText, progressBar);
         container.setAlignment(Pos.CENTER);

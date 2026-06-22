@@ -95,20 +95,13 @@ public class CustomPauseMenuScene extends FXGLMenu {
         studioLogo.setFitWidth(Settings.getMenuCornerLogoWidth());
         studioLogo.setPreserveRatio(true);
 
-        Circle statusIndicator = new Circle(Settings.getStatusIndicatorRadius(), Color.GREEN);
-        Text gameVersion = FXGL.getUIFactoryService().newText("", Color.GREEN, Settings.getFontSizeVersion());
+        Circle statusIndicator = new Circle(Settings.getStatusIndicatorRadius());
+        Text gameVersion = FXGL.getUIFactoryService().newText("", Color.TRANSPARENT, Settings.getFontSizeVersion());
+
         gameVersion.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyServerVersion()).concat(" ").concat(FXGL.getSettings().getVersion()));
 
-        APP.serverOnlineProperty().addListener((obs, oldVal, isOnline) ->
-        {
-            Color currentColor = isOnline ? Settings.getColorServerOnline() : Settings.getColorServerOffline();
-            statusIndicator.setFill(currentColor);
-            gameVersion.setFill(currentColor);
-        });
-
-        Color initColor = APP.serverOnlineProperty().get() ? Settings.getColorServerOnline() : Settings.getColorServerOffline();
-        statusIndicator.setFill(initColor);
-        gameVersion.setFill(initColor);
+        statusIndicator.fillProperty().bind(Bindings.when(APP.serverOnlineProperty()).then(Settings.getColorServerOnline()).otherwise(Settings.getColorServerOffline()));
+        gameVersion.fillProperty().bind(statusIndicator.fillProperty());
 
         HBox updatedBox = new HBox(Settings.getSpacingMedium(), statusIndicator, gameVersion);
         updatedBox.setAlignment(Pos.CENTER_LEFT);
@@ -183,7 +176,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
             CustomMainMenuScene mainMenu = (CustomMainMenuScene) FXGL.getSceneService().getMainMenuScene().get();
             mainMenu.activateMainMenu();
 
-            PauseTransition delay = new PauseTransition(Duration.millis(100));
+            PauseTransition delay = new PauseTransition(Duration.millis(Settings.getGhostClickShieldDurationMs()));
             delay.setOnFinished(event -> FXGL.getGameController().gotoMainMenu());
             delay.play();
         });
@@ -214,7 +207,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
         textMusic.getStyleClass().add(Settings.getCssClassMagicalText());
         textMusic.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuMusic()));
 
-        Slider musicSlider = new Slider(0, 1, FXGL.getSettings().getGlobalMusicVolume());
+        Slider musicSlider = new Slider(Settings.getVolumeSliderMin(), Settings.getVolumeSliderMax(), FXGL.getSettings().getGlobalMusicVolume());
         musicSlider.setMaxWidth(Settings.getMenuSliderMaxWidth());
         musicSlider.getStyleClass().add(Settings.getCssClassSlider());
         FXGL.getSettings().globalMusicVolumeProperty().bindBidirectional(musicSlider.valueProperty());
@@ -224,7 +217,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
         textSound.getStyleClass().add(Settings.getCssClassMagicalText());
         textSound.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuSound()));
 
-        Slider soundSlider = new Slider(0, 1, FXGL.getSettings().getGlobalSoundVolume());
+        Slider soundSlider = new Slider(Settings.getVolumeSliderMin(), Settings.getVolumeSliderMax(), FXGL.getSettings().getGlobalSoundVolume());
         soundSlider.setMaxWidth(Settings.getMenuSliderMaxWidth());
         soundSlider.getStyleClass().add(Settings.getCssClassSlider());
         FXGL.getSettings().globalSoundVolumeProperty().bindBidirectional(soundSlider.valueProperty());
@@ -237,8 +230,9 @@ public class CustomPauseMenuScene extends FXGLMenu {
         {
             String label = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyMenuLanguage());
             Language currentLang = FXGL.getLocalizationService().selectedLanguageProperty().get();
-            String langName = (currentLang == Language.GERMAN) ? "Deutsch" : "English";
-            return label + ": " + langName;
+            String langName = (currentLang == Language.GERMAN) ? Settings.getDisplayLangGerman() : Settings.getDisplayLangEnglish();
+
+            return String.format(Settings.getFormatMenuLabelValue(), label, langName);
         }, FXGL.getLocalizationService().selectedLanguageProperty()));
 
         Button btnWindowMode = new Button();
@@ -254,7 +248,8 @@ public class CustomPauseMenuScene extends FXGLMenu {
 
             String label = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyMenuMode());
             String value = FXGL.getLocalizationService().getLocalizedString(modeI18nKey);
-            btnWindowMode.setText(label + ": " + value);
+
+            btnWindowMode.setText(String.format(Settings.getFormatMenuLabelValue(), label, value));
         };
 
         updateModeText.run();
@@ -632,11 +627,19 @@ public class CustomPauseMenuScene extends FXGLMenu {
             String currentKey = prefs.get(Settings.getPrefsKeyBindingPrefix() + actionName, defaultKeyName);
             String displayKey = currentKey;
 
-            if (currentKey.equals("SPACE")) displayKey = FXGL.getLocalizationService().getLocalizedString("key.space");
-            else if (currentKey.equals("ENTER"))
-                displayKey = FXGL.getLocalizationService().getLocalizedString("key.enter");
+            if (currentKey.equals(Settings.getRawKeySpace()))
+            {
+                displayKey = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeySpace());
+            }
+            else if (currentKey.equals(Settings.getRawKeyEnter()))
+            {
+                displayKey = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyEnter());
+            }
 
-            if (displayKey.contains("Missing_key")) displayKey = currentKey;
+            if (displayKey.contains(Settings.getFallbackMissingKey()))
+            {
+                displayKey = currentKey;
+            }
 
             btnKey.setText(displayKey);
         };

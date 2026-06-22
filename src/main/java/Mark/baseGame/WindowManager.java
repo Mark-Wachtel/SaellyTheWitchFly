@@ -145,7 +145,7 @@ public class WindowManager
 		double centerX = stage.getX() + stage.getWidth() / 2.0;
 		double centerY = stage.getY() + stage.getHeight() / 2.0;
 		
-		return Screen.getScreens().stream().filter(s -> contains(s.getVisualBounds(), centerX, centerY) || contains(s.getBounds(), centerX, centerY)).findFirst().or(()-> nearestScreen(centerX,centerY));
+		return Screen.getScreens().stream().filter(s -> s.getVisualBounds().contains(centerX,centerY) || s.getBounds().contains(centerX,centerY)).findFirst().or(()-> nearestScreen(centerX,centerY));
 	}
 	
 	public Optional<Screen> getScreenUnderMouse()
@@ -156,7 +156,7 @@ public class WindowManager
 			double x = p.getX();
 			double y = p.getY();
 			
-			return Screen.getScreens().stream().filter(s -> contains(s.getBounds(),x,y)).findFirst().or(()-> Screen.getScreens().stream().filter(s -> contains(s.getVisualBounds(),x,y)).findFirst());
+			return Screen.getScreens().stream().filter(s -> s.getBounds().contains(x,y)).findFirst().or(()-> Screen.getScreens().stream().filter(s -> s.getVisualBounds().contains(x,y)).findFirst());
 		}
 		catch(Exception e)
 		{
@@ -170,11 +170,6 @@ public class WindowManager
 		if(screens.isEmpty()) return Optional.empty();
 		
 		return screens.stream().min(Comparator.comparingDouble(s -> distanceToRect(s.getBounds(),x,y)));
-	}
-	
-	private boolean contains(Rectangle2D r, double x, double y)
-	{
-		return x >= r.getMinX() && x <= r.getMaxX() && y >= r.getMinY() && y <= r.getMaxY(); // nachfragen
 	}
 	
 	private double distanceToRect(Rectangle2D r, double x, double y)

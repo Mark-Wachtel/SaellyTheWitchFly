@@ -28,8 +28,10 @@ import javafx.animation.KeyFrame;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.css.PseudoClass;
 import javafx.geometry.*;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -39,6 +41,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -129,7 +132,11 @@ public class SaellyApp extends GameApplication {
 		if (tpf > Settings.getMaxTpfThreshold()) tpf = Settings.getNormalTpfFallback();
 
 		double currentSpeed = getd(Settings.getKeyGeneralSpeed());
-		bgScrollX += currentSpeed * tpf;
+		if (tpf > Settings.getMaxTpfThreshold()) tpf = Settings.getNormalTpfFallback();
+
+		currentSpeed = getd(Settings.getKeyGeneralSpeed());
+
+		bgScrollX += (currentSpeed * Settings.getParallaxFactorBackground()) * tpf;
 		bgView.setScrollX(bgScrollX);
 
 		if (muteButton != null && !muteButton.isVisible()) muteButton.setVisible(true);
@@ -150,62 +157,95 @@ public class SaellyApp extends GameApplication {
 				{
 					barrierTimer = 0;
 
-					double barrierY = FXGLMath.random(Settings.getMinSpawnHeightBarrier(), Settings.getMaxSpawnHeightBarrier());
-					var scaledTexture = texture(Settings.getLinkToTopBarrierImage(), Settings.getBarrierScaleWidth(), Settings.getBarrierScaleHeight());
+					double gapTopY = FXGLMath.random(Settings.getMinSpawnHeightBarrier(), Settings.getMaxSpawnHeightBarrier());
 
-					double hitboxW = Settings.getBarrierScaleWidth() * 0.4;
-					double hitboxH = Settings.getBarrierScaleHeight() * 0.8;
-					double offsetX = (Settings.getBarrierScaleWidth() - hitboxW) / 2.0;
-					double offsetY = (Settings.getBarrierScaleHeight() - hitboxH) / 2.0;
+					double barrierW = Settings.getBarrierScaleWidth();
+					double barrierH = Settings.getBarrierScaleHeight();
 
-					Entity newBarrier = entityBuilder()
+					double hitboxW = barrierW * Settings.getBarrierHitboxWidthRatio();
+					double hitboxH = barrierH;
+
+					double offsetX = (barrierW - hitboxW) / 2.0;
+					double offsetY = 0.0;
+
+					double currentGap = FXGL.getd(Settings.getKeyCurrentBarrierGap());
+
+					double topBarrierY = gapTopY - barrierH;
+					var scaledTopTexture = texture(Settings.getLinkToTopBarrierImage(), barrierW, barrierH);
+
+					Entity topBarrier = entityBuilder()
 							.type(EntityType.BARRIER)
-							.at(getAppWidth(), barrierY)
-							.view(scaledTexture)
-							.bbox(new HitBox("MainBeam", new Point2D(offsetX, offsetY), BoundingShape.box(hitboxW, hitboxH)))
+							.at(getAppWidth(), topBarrierY)
+							.view(scaledTopTexture)
+							.bbox(new HitBox(Settings.getHitboxNameBarrier(), new Point2D(offsetX, offsetY), BoundingShape.box(hitboxW, hitboxH)))
 							.with(new CollidableComponent(true))
-							.with(new ObstacleComponent())
+							.with(new ObstacleComponent(true))
 							.buildAndAttach();
 
-					boolean shouldSpawnPowerup = FXGLMath.randomBoolean(Settings.getPowerupSpawnChance());
+					// --- NEU: Hier nutzen wir currentGap statt Settings.getBarrierGap() ---
+					double bottomBarrierY = gapTopY + currentGap;
+					var scaledBottomTexture = texture(Settings.getLinkToBottomBarrierImage(), barrierW, barrierH);
 
-					if (!getb(Settings.getKeyIsBuffActive()) && shouldSpawnPowerup)
+					Entity bottomBarrier = entityBuilder()
+							.type(EntityType.BARRIER)
+							.at(getAppWidth(), bottomBarrierY)
+							.view(scaledBottomTexture)
+							.bbox(new HitBox(Settings.getHitboxNameBarrier(), new Point2D(offsetX, offsetY), BoundingShape.box(hitboxW, hitboxH)))
+							.with(new CollidableComponent(true))
+							.with(new ObstacleComponent(false))
+							.buildAndAttach();
+
+					boolean shouldSpawnBuff = FXGLMath.randomBoolean(Settings.getBuffSpawnChance());
+					boolean shouldSpawnDebuff = !shouldSpawnBuff && FXGLMath.randomBoolean(Settings.getDebuffSpawnChance());
+
+					currentGap = FXGL.getd(Settings.getKeyCurrentBarrierGap());
+					double itemCenterY = gapTopY + (currentGap / 2.0);
+					double spawnX = getAppWidth() + Settings.getPowerupSpawnXOffset();
+
+					if (!getb(Settings.getKeyIsBuffActive()) && shouldSpawnBuff)
 					{
+						BuffType[] types = BuffType.values();
+						BuffType randomType = types[FXGLMath.random(0, types.length - 1)];
 
-						BuffPowerupComponent.Type[] types = BuffPowerupComponent.Type.values();
-						BuffPowerupComponent.Type randomType = types[FXGLMath.random(0, types.length - 1)];
-
-						String textureName = switch (randomType)
+						var scaledTexture = switch (randomType)
 						{
-							case SLOW_MOTION -> Settings.getLinkToSlowMotionImage();
-							case SCORE_X10 -> Settings.getLinkToScorex10Image();
-							case INVULNERABILITY -> Settings.getLinkToInvulnerableImage();
-							case EXTRA_LIFE -> Settings.getLinkToExtraLivesImage();
+							case SLOW_MOTION -> texture(Settings.getLinkToSlowMotionImage(), Settings.getIconSizeBuff(), Settings.getIconSizeBuff());
+							case SCORE_X10 -> texture(Settings.getLinkToScorex10Image(), Settings.getIconSizeBuff(), Settings.getIconSizeBuff());
+							case INVULNERABILITY -> texture(Settings.getLinkToInvulnerableImage(), Settings.getIconSizeBuff(), Settings.getIconSizeBuff());
+							case EXTRA_LIFE -> texture(Settings.getLinkToExtraLivesImage(), Settings.getIconSizeBuff(), Settings.getIconSizeBuff());
+							case SHRINK -> texture(Settings.getLinkToShrinkImage(), Settings.getIconSizeBuff(), Settings.getIconSizeBuff());
+							case GAP_WIDER -> texture(Settings.getLinkToGapWiderImage(), Settings.getIconSizeBuff(), Settings.getIconSizeBuff());
 						};
 
-						var scaledBuffTexture = switch (textureName)
-						{
-							case "powerups/slowMotion.png" -> texture(textureName, Settings.getSlowMotionImageWidth(), Settings.getSlowMotionImageHeight());
-							case "powerups/x10Score.png" -> texture(textureName, Settings.getScoreX10ImageWidth(), Settings.getScoreX10ImageHeight());
-							case "powerups/invulnerable.png" -> texture(textureName, Settings.getInvulnerableImageWidth(), Settings.getInvulnerableImageHeight());
-							case "powerups/extraLife.png" -> texture(textureName, Settings.getExtraLifeImageWidth(), Settings.getExtraLifeImageHeight());
-							default -> throw new IllegalStateException("Unexpected value: " + textureName);
-						};
-
-						double padding = scaledBuffTexture.getHeight() * 0.5;
-						double spawnY = newBarrier.getBottomY() + padding;
-
-						if (spawnY + scaledBuffTexture.getHeight() > Settings.getStandardWindowHeightWithoutTitlebar())
-						{
-							spawnY = newBarrier.getY() - scaledBuffTexture.getHeight() - padding;
-						}
+						double spawnY = itemCenterY - (scaledTexture.getHeight() / 2.0);
 
 						entityBuilder()
 								.type(EntityType.BUFF_POWERUP)
-								.at(getAppWidth(), spawnY)
-								.viewWithBBox(scaledBuffTexture)
+								.at(spawnX, spawnY)
+								.viewWithBBox(scaledTexture)
 								.with(new CollidableComponent(true))
 								.with(new BuffPowerupComponent(randomType))
+								.buildAndAttach();
+					}
+					else if (shouldSpawnDebuff)
+					{
+						DebuffType[] types = DebuffType.values();
+						DebuffType randomType = types[FXGLMath.random(0, types.length - 1)];
+
+						var scaledTexture = switch (randomType)
+						{
+							case GAP_NARROWER -> texture(Settings.getLinkToGapNarrowerImage(), Settings.getIconSizeBuff(), Settings.getIconSizeBuff());
+							case SPEED_UP -> texture(Settings.getLinkToSpeedUpImage(), Settings.getIconSizeBuff(), Settings.getIconSizeBuff());
+						};
+
+						double spawnY = itemCenterY - (scaledTexture.getHeight() / 2.0);
+
+						entityBuilder()
+								.type(EntityType.DEBUFF_POWERUP)
+								.at(spawnX, spawnY)
+								.viewWithBBox(scaledTexture)
+								.with(new CollidableComponent(true))
+								.with(new DebuffPowerupComponent(randomType))
 								.buildAndAttach();
 					}
 				}
@@ -264,8 +304,8 @@ public class SaellyApp extends GameApplication {
 		getSettings().getLanguage().setValue(Language.NONE);
 		getSettings().getLanguage().setValue(currentLang);
 
-		FXGL.getSettings().setGlobalMusicVolume(prefs.getDouble("musicVolume", 0.5));
-		FXGL.getSettings().setGlobalSoundVolume(prefs.getDouble("soundVolume", 0.5));
+		FXGL.getSettings().setGlobalMusicVolume(prefs.getDouble(Settings.getPrefsKeyMusicVol(), Settings.getDefaultRestoreMusicVolume()));
+		FXGL.getSettings().setGlobalSoundVolume(prefs.getDouble(Settings.getPrefsKeySoundVol(), Settings.getDefaultRestoreSoundVolume()));
 
 		int muteSize = Settings.getIconSizeMute();
 		soundOnIcon = getAssetLoader().loadTexture(Settings.getLinkToUiSoundUnmutedImage(),muteSize,muteSize);
@@ -301,21 +341,63 @@ public class SaellyApp extends GameApplication {
 		playMainMenuMusic();
 
 	}
-	//All stuff thats needed to load before the game starts. 
 	@Override
-	protected void initGame() 
+	protected void initGame()
 	{
-
 		set(Settings.getKeyIsGameOver(), false);
 		set(Settings.getKeyIsCrashing(), false);
 
-		double offsetX = (Settings.getInitPlayerScaleWidth()-Settings.getPlayerCollisionBoxWidth()) / 2.0;
-		double offsetY = (Settings.getInitPlayerScaleHeight()-Settings.getPlayerCollisionBoxHeight()) / 2.0;
-
-		entityBuilder().type(EntityType.PLAYER).at(Settings.getPlayerStartXPosition(),Settings.getPlayerStartYPosition()).scale(Settings.getInitPlayerScale(), Settings.getInitPlayerScale()).bbox(new HitBox(Settings.getHitboxNameBody(),new Point2D(offsetX,offsetY),BoundingShape.box(Settings.getPlayerCollisionBoxWidth(),Settings.getPlayerCollisionBoxHeight()))).with(new PhysicsComponent()).with(new CollidableComponent(true)).with(new AnimationComponent()).with(new PlayerComponent()).buildAndAttach();
-
 		bgView = new ScrollingBackgroundView(texture(Settings.getLinkToBackgroundImage(), getAppWidth(), getAppHeight()), Orientation.HORIZONTAL);
-		entityBuilder().at(0,Settings.getStandardTitlebarHeight()).view(bgView).zIndex(-1).buildAndAttach();
+		entityBuilder()
+				.at(0, Settings.getStandardTitlebarHeight())
+				.view(bgView)
+				.zIndex(Settings.getzIndexBackground())
+				.buildAndAttach();
+
+		double offsetX = ((Settings.getInitPlayerScaleWidth() - Settings.getPlayerCollisionBoxWidth()) / 2.0) + Settings.getPlayerCollisionBoxOffsetX();
+		double offsetY = ((Settings.getInitPlayerScaleHeight() - Settings.getPlayerCollisionBoxHeight()) / 2.0) + Settings.getPlayerCollisionBoxOffsetY();
+
+		entityBuilder()
+				.type(EntityType.PLAYER)
+				.at(Settings.getPlayerStartXPosition(), Settings.getPlayerStartYPosition())
+				.scale(Settings.getInitPlayerScale(), Settings.getInitPlayerScale())
+				.bbox(new HitBox(Settings.getHitboxNameBody(), new Point2D(offsetX, offsetY), BoundingShape.box(Settings.getPlayerCollisionBoxWidth(), Settings.getPlayerCollisionBoxHeight())))
+				.with(new PhysicsComponent())
+				.with(new CollidableComponent(true))
+				.with(new AnimationComponent())
+				.with(new PlayerComponent())
+				.buildAndAttach();
+
+		double barrierThickness = Settings.getInvisibleBarrierThickness();
+
+		entityBuilder().type(EntityType.BARRIER).at(0, -barrierThickness)
+				.viewWithBBox(new javafx.scene.shape.Rectangle(getAppWidth(), barrierThickness, Color.TRANSPARENT))
+				.with(new CollidableComponent(true)).buildAndAttach();
+
+		entityBuilder().type(EntityType.BARRIER).at(0, getAppHeight())
+				.viewWithBBox(new javafx.scene.shape.Rectangle(getAppWidth(), barrierThickness, Color.TRANSPARENT))
+				.with(new CollidableComponent(true)).buildAndAttach();
+
+		getGameTimer().runAtInterval(() ->
+		{
+			double randomScale = FXGLMath.random(Settings.getCloudScaleMin(), Settings.getCloudScaleMax());
+			double randomY = FXGLMath.random(Settings.getCloudSpawnYMin(), getAppHeight() / 2.0);
+
+			var cloudTexture = texture(Settings.getLinkToCloudImage());
+			cloudTexture.setScaleX(randomScale);
+			cloudTexture.setScaleY(randomScale);
+			cloudTexture.setOpacity(Settings.getCloudOpacity());
+
+			entityBuilder()
+					.type(EntityType.CLOUD)
+					.at(getAppWidth() + Settings.getCloudSpawnXOffset(), randomY)
+					.view(cloudTexture)
+					.zIndex(Settings.getZIndexForeground())
+					.with(new CloudComponent())
+					.buildAndAttach();
+
+		}, javafx.util.Duration.seconds(Settings.getCloudSpawnIntervalSec()));
+
 		startHeartbeat();
 
 		getGameWorld().addWorldListener(new EntityWorldListener()
@@ -335,7 +417,7 @@ public class SaellyApp extends GameApplication {
 
 		getGameWorld().getEntities().forEach(f ->
 		{
-			if (f.getType() == EntityType.PLAYER || f.getType() == EntityType.BARRIER || f.getType() == EntityType.BUFF_POWERUP)
+			if (f.getType() == EntityType.PLAYER || f.getType() == EntityType.BARRIER || f.getType() == EntityType.BUFF_POWERUP || f.getType() == EntityType.PROJECTILE)
 			{
 				if (!f.hasComponent(HitboxDebuggerComponent.class)) f.addComponent(new HitboxDebuggerComponent());
 			}
@@ -343,7 +425,7 @@ public class SaellyApp extends GameApplication {
 
 		FXGL.getWorldProperties().intProperty(Settings.getKeyScore()).addListener((obs, oldScore, newScore) ->
 		{
-			int nextSpeedupTarget = FXGL.geti("nextSpeedupScore");
+			int nextSpeedupTarget = FXGL.geti(Settings.getKeyNextSpeedupScore());
 
 			if (newScore.intValue() >= nextSpeedupTarget)
 			{
@@ -351,7 +433,7 @@ public class SaellyApp extends GameApplication {
 				FXGL.inc(Settings.getKeyBarrierSpeed(), Settings.getGameSpeed());
 
 				int updatedTarget = nextSpeedupTarget + Settings.getBarriersToSpeedupTheGame();
-				FXGL.set("nextSpeedupScore", updatedTarget);
+				FXGL.set(Settings.getKeyNextSpeedupScore(), updatedTarget);
 			}
 		});
 	}
@@ -379,14 +461,19 @@ public class SaellyApp extends GameApplication {
 				}
 				else
 				{
-					double effectW = Settings.getCrashEffectTargetWidth();
-					double effectH = Settings.getCrashEffectTargetHeight();
+					double effectW = Settings.getCrashEffectFrameWidth() * Settings.getCrashEffectScale();
+					double effectH = Settings.getCrashEffectFrameHeight() * Settings.getCrashEffectScale();
+
 					Point2D center = player.getCenter();
 					double spawnX = center.getX() - (effectW / 2.0) + Settings.getCrashEffectOffsetX();
 					double spawnY = center.getY() - (effectH / 2.0) + Settings.getCrashEffectOffsetY();
 
 					player.removeFromWorld();
-					entityBuilder().at(spawnX, spawnY).zIndex(100).with(new EffectComponent(EffectComponent.EffectType.CRASH)).buildAndAttach();
+					entityBuilder()
+							.at(spawnX, spawnY)
+							.zIndex(Settings.getZIndexGame())
+							.with(new EffectComponent(EffectComponent.EffectType.CRASH))
+							.buildAndAttach();
 					gameOver();
 				}
 			}
@@ -394,44 +481,71 @@ public class SaellyApp extends GameApplication {
 
 				getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.PLAYER, EntityType.BUFF_POWERUP)
 				{
-				@Override
+					@Override
 					protected void onCollisionBegin(Entity player, Entity buffPowerup)
-				{
-					BuffPowerupComponent comp = buffPowerup.getComponent(BuffPowerupComponent.class);
-					comp.activateEffect();
+					{
+						BuffPowerupComponent comp = buffPowerup.getComponent(BuffPowerupComponent.class);
+						comp.activateEffect();
 
-					double effectW = Settings.getPickupEffectTargetWidth();
-					double effectH = Settings.getPickupEffectTargetHeight();
-					Point2D center = player.getCenter();
-					double spawnX = center.getX() - (effectW / 2.0) + Settings.getPickupEffectOffsetX();
-					double spawnY = center.getY() - (effectH / 2.0) + Settings.getPickupEffectOffsetY();
+						double effectW = Settings.getPickupEffectFrameWidth() * Settings.getPickupEffectScale();
+						double effectH = Settings.getPickupEffectFrameHeight() * Settings.getPickupEffectScale();
 
-					entityBuilder().at(spawnX, spawnY).zIndex(100).with(new EffectComponent(EffectComponent.EffectType.PICKUP)).buildAndAttach();
+						Point2D center = player.getCenter();
+						double spawnX = center.getX() - (effectW / 2.0) + Settings.getPickupEffectOffsetX();
+						double spawnY = center.getY() - (effectH / 2.0) + Settings.getPickupEffectOffsetY();
+
+						entityBuilder()
+								.at(spawnX, spawnY)
+								.zIndex(Settings.getZIndexGame())
+								.with(new EffectComponent(EffectComponent.EffectType.PICKUP))
+								.buildAndAttach();
 
 					var type = comp.getType();
-					double buffDuration = switch (type)
-					{
-						case INVULNERABILITY -> Settings.getInvulnerableDurationInSeconds();
-						case SLOW_MOTION -> Settings.getSlowMotionBuffPowerupDurationSeconds();
-						case SCORE_X10 -> Settings.getScoreX10DurationSeconds();
-						default -> 1.0;
-					};
 
-					if (type != BuffPowerupComponent.Type.EXTRA_LIFE)
+					if (type == BuffType.INVULNERABILITY || type == BuffType.SLOW_MOTION)
 					{
-						player.addComponent(new ActiveBuffComponent(type));
-
-						getGameTimer().runOnceAfter(()->
-						{
-							if (player.hasComponent(ActiveBuffComponent.class))
-							{
-								player.removeComponent(ActiveBuffComponent.class);
-							}
-						}, Duration.seconds(buffDuration));
+						entityBuilder()
+								.zIndex(Settings.getZIndexGame() + 1) // Setzt den Effekt visuell ganz knapp VOR Saelly
+								.with(new ActiveBuffComponent(player, type))
+								.buildAndAttach();
 					}
 					buffPowerup.removeFromWorld();
 				}
 				});
+
+		getPhysicsWorld().addCollisionHandler(new CollisionHandler(EntityType.PLAYER, EntityType.DEBUFF_POWERUP)
+		{
+			@Override
+			protected void onCollisionBegin(Entity player, Entity debuffPowerup)
+			{
+				DebuffPowerupComponent comp = debuffPowerup.getComponent(DebuffPowerupComponent.class);
+				comp.activateEffect();
+
+				double effectW = Settings.getPickupEffectFrameWidth() * Settings.getPickupEffectScale();
+				double effectH = Settings.getPickupEffectFrameHeight() * Settings.getPickupEffectScale();
+
+				Point2D center = player.getCenter();
+				double spawnX = center.getX() - (effectW / 2.0) + Settings.getPickupEffectOffsetX();
+				double spawnY = center.getY() - (effectH / 2.0) + Settings.getPickupEffectOffsetY();
+
+				entityBuilder()
+						.at(spawnX, spawnY)
+						.zIndex(Settings.getZIndexGame())
+						.with(new EffectComponent(EffectComponent.EffectType.PICKUP))
+						.buildAndAttach();
+
+				debuffPowerup.removeFromWorld();
+			}
+		});
+
+		getPhysicsWorld().addCollisionHandler(new com.almasb.fxgl.physics.CollisionHandler(EntityType.PROJECTILE, EntityType.BARRIER)
+		{
+			@Override
+			protected void onCollisionBegin(com.almasb.fxgl.entity.Entity projectile, com.almasb.fxgl.entity.Entity barrier)
+			{
+				projectile.removeFromWorld();
+			}
+		});
 	}
 	
 	@Override
@@ -615,10 +729,15 @@ public class SaellyApp extends GameApplication {
 						if (gameVersion != null) gameVersion.setVisible(false);
 						if (statusIndicator != null) statusIndicator.setVisible(false);
 						if (topBar != null) topBar.setVisible(false);
+
+						playPauseMenuMusic();
+
 						getGameController().gotoGameMenu();
 					}
 					else if (isMenuScene)
 					{
+						playGameMusic();
+
 						getGameController().gotoPlay();
 					}
 				});
@@ -636,28 +755,63 @@ public class SaellyApp extends GameApplication {
 
 		final double[] lastVolume = { getSettings().getGlobalMusicVolume() };
 
-		Text scoreUI = getUIFactoryService().newText("",Color.WHITE, Settings.getFontSizeScore());
+		heartIcon = FXGL.texture(Settings.getLinkToHeartUiImage());
+		heartIcon.setFitWidth(Settings.getHeartUiImageWidth());
+		heartIcon.setFitHeight(Settings.getHeartUiImageHeight());
+		heartIcon.setPreserveRatio(true);
+		heartIcon.setTranslateY(Settings.getUiLivesOffsetY());
+
+		Text livesText = getUIFactoryService().newText("", Color.WHITE, Settings.getFontSizeLives());
+		livesText.textProperty().bind(getWorldProperties().intProperty(Settings.getKeyLives()).asString(Settings.getFormatLives()));
+		livesText.getStyleClass().add(Settings.getCssClassLivesUi());
+
+		HBox livesUi = new HBox(Settings.getSpacingLarge(), heartIcon, livesText);
+		livesUi.setAlignment(Pos.CENTER_LEFT);
+
+		Text scoreUI = getUIFactoryService().newText("", Color.WHITE, Settings.getFontSizeScore());
 		this.ingameScoreText = scoreUI;
 		scoreUI.textProperty().bind(localizedStringProperty(Settings.getLangKeyIngamePoints()).concat(" ").concat(getWorldProperties().intProperty(Settings.getKeyScore()).asString()));
-		Text livesText = getUIFactoryService().newText("", Color.BLACK,Settings.getFontSizeLives());
-		livesText.textProperty().bind(getWorldProperties().intProperty(Settings.getKeyLives()).asString(Settings.getFormatLives()));
-		HBox livesUi = new HBox(Settings.getSpacingLarge(), heartIcon, livesText);
-		HBox powerupUI = new HBox(Settings.getSpacingLarge(),buffIcon);
+		scoreUI.getStyleClass().add(Settings.getCssClassScoreUi());
+
+		ImageView buffIcon = new ImageView();
+		buffIcon.setFitWidth(Settings.getIconSizeBuff());
+		buffIcon.setFitHeight(Settings.getIconSizeBuff());
+		buffIcon.setPreserveRatio(true);
+
+		getWorldProperties().stringProperty(Settings.getKeyActiveBuffImagePath()).addListener((obs, oldPath, newPath) -> {
+			if (newPath == null || newPath.trim().isEmpty()) {
+				buffIcon.setImage(null);
+			} else {
+				try {
+					buffIcon.setImage(FXGL.image(newPath));
+				} catch (Exception e) {
+					System.err.println(Settings.getErrMsgBuffImageNotFound() + newPath);
+				}
+			}
+		});
+
+		HBox powerupUI = new HBox(Settings.getSpacingLarge(), buffIcon);
+		powerupUI.setAlignment(Pos.CENTER_RIGHT);
+
 		powerupUI.visibleProperty().bind(getbp(Settings.getKeyIsBuffActive()));
 
 		this.topBar = new HBox();
 		topBar.setPrefWidth(getAppWidth());
-		topBar.setPadding(new Insets(Settings.getTopBarPaddingTop(),Settings.getTopBarPaddingSide(),0,Settings.getTopBarPaddingSide()));
-		HBox leftContainer = new HBox(Settings.getSpacingLarge(),livesUi);
+		topBar.setPadding(new Insets(Settings.getTopBarPaddingTop(), Settings.getTopBarPaddingSide(), 0, Settings.getTopBarPaddingSide()));
+
+		HBox leftContainer = new HBox(livesUi);
 		leftContainer.setAlignment(Pos.CENTER_LEFT);
-		HBox.setHgrow(leftContainer, Priority.ALWAYS);
+		leftContainer.prefWidthProperty().bind(topBar.widthProperty().divide(3));
+
 		HBox centerContainer = new HBox(scoreUI);
 		centerContainer.setAlignment(Pos.CENTER);
-		HBox.setHgrow(centerContainer,Priority.ALWAYS);
+		centerContainer.prefWidthProperty().bind(topBar.widthProperty().divide(3));
+
 		HBox rightContainer = new HBox(powerupUI);
 		rightContainer.setAlignment(Pos.CENTER_RIGHT);
-		HBox.setHgrow(rightContainer,Priority.ALWAYS);
-		topBar.getChildren().addAll(leftContainer,centerContainer,rightContainer);
+		rightContainer.prefWidthProperty().bind(topBar.widthProperty().divide(3));
+
+		topBar.getChildren().addAll(leftContainer, centerContainer, rightContainer);
 		addUINode(topBar);
 		this.muteButton = new javafx.scene.control.Button("", soundOnIcon);
 
@@ -680,7 +834,7 @@ public class SaellyApp extends GameApplication {
 				muteButton.setGraphic(soundOnIcon);
 			}
 		});
-		muteButton.getStyleClass().add("mute-button");
+		muteButton.getStyleClass().add(Settings.getCssClassMuteBtn());
 		double animDur = Settings.getMuteBtnAnimDurationMs();
 		double scaleHover = Settings.getMuteBtnScaleHover();
 		double scalePress = Settings.getMuteBtnScalePress();
@@ -720,8 +874,16 @@ public class SaellyApp extends GameApplication {
 		muteButton.setViewOrder(Settings.getViewOrderUiTop());
 		getGameScene().addUINode(muteButton);
 
-		statusIndicator = new Circle(Settings.getStatusIndicatorRadius(),Color.RED);
-		gameVersion = getUIFactoryService().newText(getLocalizationService().getLocalizedString(Settings.getLangKeyServerVersion()) + getSettings().getVersion(), Color.RED, Settings.getFontSizeVersion());
+		statusIndicator = new Circle(Settings.getStatusIndicatorRadius());
+		gameVersion = getUIFactoryService().newText(getLocalizationService().getLocalizedString(Settings.getLangKeyServerVersion()) + getSettings().getVersion(), Color.WHITE, Settings.getFontSizeVersion());
+
+		statusIndicator.fillProperty().bind(
+				Bindings.when(serverOnlineProp)
+						.then(Settings.getColorServerOnline())
+						.otherwise(Settings.getColorServerOffline())
+		);
+
+		gameVersion.fillProperty().bind(statusIndicator.fillProperty());
 		this.updatedBox = new HBox(Settings.getSpacingMedium(), statusIndicator, gameVersion);
 		gameVersion.managedProperty().bind(gameVersion.visibleProperty());
 		updatedBox.setAlignment(Pos.CENTER_LEFT);
@@ -734,7 +896,8 @@ public class SaellyApp extends GameApplication {
 		modalOverlay.setMinSize(getAppWidth(), getAppHeight());
 		modalOverlay.setMaxSize(getAppWidth(), getAppHeight());
 
-		Rectangle dimBg = new Rectangle(getAppWidth(), getAppHeight(), Color.color(0,0,0,Settings.getUiDimBackgroundOpacity()));
+		Rectangle dimBg = new Rectangle(getAppWidth(), getAppHeight());
+		dimBg.getStyleClass().add(Settings.getCssClassDimOverlay());
 
 		ImageView loadingSprite = new ImageView(image(Settings.getLinkToLoadingAnimation()));
 
@@ -760,7 +923,7 @@ public class SaellyApp extends GameApplication {
 			double x = col * frameWidth;
 			double y = row * frameHeight;
 
-			Duration time = Duration.millis((1000.0 / totalFrames) * i);
+			Duration time = Duration.millis((Settings.getAppLoadingAnimationDurationMs() / totalFrames) * i);
 
 			final int frameIndex = i;
 
@@ -768,11 +931,11 @@ public class SaellyApp extends GameApplication {
 			{
 				loadingSprite.setViewport(new Rectangle2D(x,y,frameWidth,frameHeight));
 
-				if (frameIndex < 6)
+				if (frameIndex < Settings.getAppLoadingAnimDotThreshold1())
 				{
 					loadingText.setText(getLocalizationService().getLocalizedString(Settings.getLangKeyLoadingText()) + ".");
 				}
-				else if (frameIndex < 12)
+				else if (frameIndex < Settings.getAppLoadingAnimDotThreshold2())
 				{
 					loadingText.setText(getLocalizationService().getLocalizedString(Settings.getLangKeyLoadingText()) + "..");
 				}
@@ -788,6 +951,7 @@ public class SaellyApp extends GameApplication {
 		timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(Settings.getLoadingAnimDelaySeconds())));
 		timeline.play();
 
+		loadingText.getStyleClass().add(Settings.getCssClassLoadingText());
 
 		VBox contentBox = new VBox(Settings.getSpacingSmall());
 		contentBox.setAlignment(Pos.CENTER);
@@ -816,6 +980,8 @@ public class SaellyApp extends GameApplication {
 		vars.put(Settings.getKeyIsDebuffActive(), Settings.getInitIsDebuffActive());
 		vars.put(Settings.getKeyPlaced(), Settings.getInitPlacedValue());
 		vars.put(Settings.getKeyIsDebugging(), Settings.getInitIsDebugging());
+		vars.put(Settings.getKeyActiveBuffImagePath(), Settings.getInitActiveBuffImagePath());
+		vars.put(Settings.getKeyCurrentBarrierGap(), Settings.getBarrierGap());
 	}
 	
 	
@@ -826,7 +992,7 @@ public class SaellyApp extends GameApplication {
 		Preferences prefs = Preferences.userNodeForPackage(SaellyApp.class);
 
 		// 1. Windowed (Fallback: F10)
-		String savedWindowedStr = prefs.get("key_for_" + Settings.getActionWindowed(), Settings.getDefaultKeyWindowed());
+		String savedWindowedStr = prefs.get(Settings.getPrefsKeyBindingPrefix() + Settings.getActionWindowed(), Settings.getDefaultKeyWindowed());
 		KeyCode windowedKey;
 		try
 		{
@@ -834,7 +1000,7 @@ public class SaellyApp extends GameApplication {
 		}
 		catch (IllegalArgumentException e)
 		{
-			windowedKey = KeyCode.F10;
+			windowedKey = Settings.getDefaultKeyCodeWindowed();
 		}
 
 		input.addAction(new UserAction(Settings.getActionWindowed())
@@ -847,7 +1013,7 @@ public class SaellyApp extends GameApplication {
 		}, windowedKey);
 
 		// 2. Borderless (Fallback: F11)
-		String savedBorderlessStr = prefs.get("key_for_" + Settings.getActionBorderless(), Settings.getDefaultKeyBorderless());
+		String savedBorderlessStr = prefs.get(Settings.getPrefsKeyBindingPrefix() + Settings.getActionBorderless(), Settings.getDefaultKeyBorderless());
 		KeyCode borderlessKey;
 		try
 		{
@@ -855,7 +1021,7 @@ public class SaellyApp extends GameApplication {
 		}
 		catch (IllegalArgumentException e)
 		{
-			borderlessKey = KeyCode.F11;
+			borderlessKey = Settings.getDefaultKeyCodeBorderless();
 		}
 
 		input.addAction(new UserAction(Settings.getActionBorderless())
@@ -868,7 +1034,7 @@ public class SaellyApp extends GameApplication {
 		}, borderlessKey);
 
 		// 3. Fullscreen (Fallback: F12)
-		String savedFullscreenStr = prefs.get("key_for_" + Settings.getActionFullscreen(), Settings.getDefaultKeyFullscreen());
+		String savedFullscreenStr = prefs.get(Settings.getPrefsKeyBindingPrefix() + Settings.getActionFullscreen(), Settings.getDefaultKeyFullscreen());
 		KeyCode fullscreenKey;
 		try
 		{
@@ -876,7 +1042,7 @@ public class SaellyApp extends GameApplication {
 		}
 		catch (IllegalArgumentException e)
 		{
-			fullscreenKey = KeyCode.F12;
+			fullscreenKey = Settings.getDefaultKeyCodeFullscreen();
 		}
 
 		input.addAction(new UserAction(Settings.getActionFullscreen())
@@ -887,7 +1053,7 @@ public class SaellyApp extends GameApplication {
 				if(windowManager != null) windowManager.switchMode(WindowMode.FULLSCREEN);
 			}
 		}, fullscreenKey);
-		String savedJumpStr = prefs.get("key_for_" + Settings.getActionJump(), Settings.getDefaultKeyJump());
+		String savedJumpStr = prefs.get(Settings.getPrefsKeyBindingPrefix() + Settings.getActionJump(), Settings.getDefaultKeyJump());
 		KeyCode jumpKey;
 		try
 		{
@@ -895,7 +1061,7 @@ public class SaellyApp extends GameApplication {
 		}
 		catch (IllegalArgumentException e)
 		{
-			jumpKey = KeyCode.SPACE;
+			jumpKey = Settings.getDefaultKeyCodeJump();
 		}
 
 		onKeyDown(jumpKey, Settings.getActionJump(), () ->
@@ -904,7 +1070,7 @@ public class SaellyApp extends GameApplication {
 			getGameWorld().getSingleton(EntityType.PLAYER).getComponent(PlayerComponent.class).jump();
 		});
 
-		String savedRestartStr = prefs.get("key_for_" + Settings.getActionRestart(), Settings.getDefaultKeyRestart());
+		String savedRestartStr = prefs.get(Settings.getPrefsKeyBindingPrefix()+ Settings.getActionRestart(), Settings.getDefaultKeyRestart());
 		KeyCode restartKey;
 		try
 		{
@@ -912,7 +1078,7 @@ public class SaellyApp extends GameApplication {
 		}
 		catch (IllegalArgumentException e)
 		{
-			restartKey = KeyCode.ENTER;
+			restartKey = Settings.getDefaultKeyCodeRestart();
 		}
 
 		onKeyDown(restartKey, Settings.getActionRestart(), () ->
@@ -955,6 +1121,16 @@ public class SaellyApp extends GameApplication {
 			}
 		});
 
+		FXGL.getInput().addAction(new UserAction("Shoot Dark Magic") {
+			@Override
+			protected void onAction() {
+				var playerOpt = getGameWorld().getSingletonOptional(EntityType.PLAYER);
+				if (playerOpt.isPresent()) {
+					playerOpt.get().getComponent(PlayerComponent.class).shoot();
+				}
+			}
+		}, MouseButton.PRIMARY);
+
 		//Debug
 		getInput().addAction(new UserAction(Settings.getActionToggleDebug())
 		{
@@ -964,7 +1140,7 @@ public class SaellyApp extends GameApplication {
 				boolean current = getb(Settings.getKeyIsDebugging());
 				set(Settings.getKeyIsDebugging(), !current);
 			}
-		},KeyCode.H);
+		},Settings.getDefaultKeyCodeToggleDebug());
 	}
 
 	private void startHeartbeat()
@@ -1032,11 +1208,11 @@ public class SaellyApp extends GameApplication {
 		gameOverBox = new VBox(Settings.getSpacingXxlarge());
 		gameOverBox.setAlignment(Pos.CENTER);
 		gameOverBox.setPrefSize(getAppWidth(), getAppHeight());
-		gameOverBox.getStyleClass().add("game-over-screen");
+		gameOverBox.getStyleClass().add(Settings.getCssClassGameOverScreen());
 
 		Text title = getUIFactoryService().newText("", Color.RED, Settings.getFontSizeGameoverTitle());
 		title.textProperty().bind(localizedStringProperty(Settings.getLangKeyGameOver()));
-		title.getStyleClass().add("game-over-title");
+		title.getStyleClass().add(Settings.getCssClassGameOverTitle());
 
 		this.currentRun = new ScoreEntry(Settings.getDefaultPlayerName(), geti(Settings.getKeyScore()), 0);
 		highscoreList.add(currentRun);
@@ -1047,7 +1223,7 @@ public class SaellyApp extends GameApplication {
 
 		VBox leaderboardBox = new VBox(Settings.getSpacingSmall());
 		leaderboardBox.setAlignment(Pos.CENTER);
-		leaderboardBox.getStyleClass().add("leaderboard-box");
+		leaderboardBox.getStyleClass().add(Settings.getCssClassLeaderboardBox());
 
 		int start = index -Settings.getHighscoreDisplayOffsetStart();
 		int end = index +Settings.getHighscoreDisplayOffsetEnd();
@@ -1077,7 +1253,7 @@ public class SaellyApp extends GameApplication {
 				Text middleNameLabel = getUIFactoryService().newText(labelName + ": ", Color.web(Settings.getColorHighlightHex()),Settings.getFontSizeGameoverRank());
 
 				this.nameInputField = new TextField(Settings.getDefaultPlayerName());
-				nameInputField.getStyleClass().add("name-input-field");
+				nameInputField.getStyleClass().add(Settings.getCssClassNameInput());
 				nameInputField.setPrefWidth(Settings.getNameInputPrefWidth());
 				nameInputField.setAlignment(Pos.CENTER);
 
@@ -1097,18 +1273,24 @@ public class SaellyApp extends GameApplication {
 			{
 				ScoreEntry entry = highscoreList.get(i);
 
-				Color textColor = (i > index) ? Color.GRAY : Color.LIGHTGRAY;
+				String formattedText = String.format(Settings.getFormatGameoverLeaderboard(), i + 1, labelName, entry.getName(), labelHighscore, entry.getScore(), labelPoints);
+				Text entryText = getUIFactoryService().newText(formattedText, Color.TRANSPARENT, Settings.getFontSizeGameoverEntry());
 
-				String formattedText = String.format("#%d  %s: %-5s  %s: %06d %s",
-						i + 1, labelName, entry.getName(), labelHighscore, entry.getScore(), labelPoints);
-
-				Text entryText = getUIFactoryService().newText(formattedText, textColor, Settings.getFontSizeGameoverEntry());
+				if (i > index)
+				{
+					entryText.getStyleClass().add(Settings.getCssClassLeaderboardGray());
+				}
+				else
+				{
+					entryText.getStyleClass().add(Settings.getCssClassLeaderboardNormal());
+				}
 				leaderboardBox.getChildren().add(entryText);
 			}
 		}
 
 		Text instruction = getUIFactoryService().newText("", Color.YELLOW, Settings.getFontSizeGameoverInstruct());
 		instruction.textProperty().bind(localizedStringProperty(Settings.getLangKeyPressEnter()));
+		instruction.getStyleClass().add(Settings.getCssClassGameOverInstruction());
 
 		gameOverBox.getChildren().addAll(title,leaderboardBox,instruction);
 
@@ -1125,11 +1307,6 @@ public class SaellyApp extends GameApplication {
 		this.isServerReachable = isReachable;
 
 		serverOnlineProp.set(isReachable);
-
-		Color statusColor= isReachable ? Color.GREEN : Color.RED;
-
-		if (statusIndicator != null) statusIndicator.setFill(statusColor);
-		if (gameVersion != null) gameVersion.setFill(statusColor);
 	}
 
 	public void toggleMuteFromMenu()

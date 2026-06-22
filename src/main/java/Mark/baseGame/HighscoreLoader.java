@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,7 +14,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -61,9 +64,9 @@ public class HighscoreLoader
 
         try
         {
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(Settings.getHighscoreServerUrl() + "?action=get")).timeout(Duration.ofSeconds(Settings.getHttpTimeoutSeconds())).GET().build();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(Settings.getHighscoreServerUrl() + Settings.getApiActionGet())).timeout(Duration.ofSeconds(Settings.getHttpTimeoutSeconds())).GET().build();
             httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(stringHttpResponse ->{
-                if (stringHttpResponse.statusCode() == 200 && !stringHttpResponse.body().trim().isEmpty())
+                if (stringHttpResponse.statusCode() == HttpURLConnection.HTTP_OK && !stringHttpResponse.body().trim().isEmpty())
                 {
                     Platform.runLater(() -> {
                       this.isFileDirty = false;
@@ -78,7 +81,7 @@ public class HighscoreLoader
                       String[] lines = stringHttpResponse.body().split("\n");
                       for (String line : lines)
                       {
-                          String[] parts = line.split(";");
+                          String[] parts = line.split(Settings.getDelimiterScoreEntry());
                           if (parts.length == 2)
                           {
                               ScoreEntry oe = new ScoreEntry(parts[0], Integer.parseInt(parts[1].trim()), 0);
@@ -132,9 +135,15 @@ public class HighscoreLoader
         try
         {
             String hash = generateSHA256(Settings.getHighscorePhpPwd() + name + score);
-            String postData = "action=save&name=" + name + "&score=" + score + "&place=" + placed + "&hash=" + hash;
+            String postData = String.format(Settings.getFormatApiSave(), name, score, placed, hash);
 
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(Settings.getHighscoreServerUrl())).timeout(Duration.ofSeconds(Settings.getHttpTimeoutSeconds())).header("Content-Type", "application/x-www-form-urlencoded").POST(HttpRequest.BodyPublishers.ofString(postData, StandardCharsets.UTF_8)).build();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(Settings.getHighscoreServerUrl()))
+                    .timeout(Duration.ofSeconds(Settings.getHttpTimeoutSeconds()))
+                    .header(Settings.getHttpHeaderContentType(), Settings.getHttpHeaderUrlEncoded())
+                    .POST(HttpRequest.BodyPublishers.ofString(postData, StandardCharsets.UTF_8))
+                    .build();
+
             httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(stringHttpResponse -> {
                Platform.runLater(()->{
                    if (stringHttpResponse.body().trim().equals(Settings.getServerResponseSuccess()))
@@ -193,13 +202,13 @@ public class HighscoreLoader
             if (lines.isEmpty()) return;
 
             String lastLine = lines.get(lines.size() -1);
-            if (!lastLine.startsWith("HASH:"))
+            if (!lastLine.startsWith(Settings.getPrefixHash()))
             {
                 System.out.println(Settings.getErrMsgNoHash());
                 initDummyHighscore();
                 return;
             }
-            String safedHash = lastLine.substring(5);
+            String safedHash = lastLine.substring(Settings.getPrefixHash().length());
             List<String> decryptedLines = new ArrayList<>();
             StringBuilder dataForHash = new StringBuilder();
             for (int i = 0 ; i < lines.size() -1; i++)
@@ -225,7 +234,7 @@ public class HighscoreLoader
             int currentPlace = 1;
             for (int i = 0 ; i < decryptedLines.size();i++)
             {
-                String[] parts = decryptedLines.get(i).split(";");
+                String[] parts = decryptedLines.get(i).split(Settings.getDelimiterScoreEntry());
                 if (parts.length >= 3)
                 {
                     ScoreEntry entry = new ScoreEntry(parts[0], Integer.parseInt(parts[1].trim()),currentPlace);
@@ -273,13 +282,15 @@ public class HighscoreLoader
             StringBuilder dataForHash = new StringBuilder();
             for (ScoreEntry entry : highscoreList)
             {
-                String plainLine = entry.getName() + ";" + entry.getScore() + ";" + entry.isSynced();
+                String plainLine = entry.getName() + Settings.getDelimiterScoreEntry()
+                        + entry.getScore() + Settings.getDelimiterScoreEntry()
+                        + entry.isSynced();
                 dataForHash.append(plainLine);
                 String encryptedLine = encrypt(plainLine);
                 linesToSave.add(encryptedLine);
             }
             String controllHash = generateSHA256(dataForHash.toString() + Settings.getHighscorePhpPwd());
-            linesToSave.add("HASH:" + controllHash);
+            linesToSave.add(Settings.getPrefixHash() + controllHash);
             Files.write(LOCAL_FILE, linesToSave);
         }
         catch (IOException e)
@@ -306,9 +317,14 @@ public class HighscoreLoader
     public void pingServer(java.util.function.Consumer<Boolean> onResult)
     {
         try {
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(Settings.getHighscoreServerUrl() + "?action=ping")).timeout(Duration.ofSeconds(Settings.getPingTimeoutSeconds())).GET().build();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(Settings.getHighscoreServerUrl() + Settings.getApiActionPing()))
+                    .timeout(Duration.ofSeconds(Settings.getPingTimeoutSeconds()))
+                    .GET()
+                    .build();
+
             httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(res -> {
-                boolean reachable = (res.statusCode() == 200);
+                boolean reachable = (res.statusCode() == HttpURLConnection.HTTP_OK);
                 Platform.runLater(() -> onResult.accept(reachable));
             }).exceptionally(ex -> {
                 Platform.runLater(() -> onResult.accept(false));
@@ -357,7 +373,7 @@ public class HighscoreLoader
         try
         {
             ensureDirectoryExists();
-            String now = java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Settings.getFormatDateTimeSync()));
             String encryptedTimestamp = encrypt(now);
             Files.writeString(METADATA_FILE,encryptedTimestamp);
         }
@@ -399,7 +415,7 @@ public class HighscoreLoader
 
     private String generateSHA256(String input) throws Exception
     {
-        java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+        MessageDigest digest = MessageDigest.getInstance(Settings.getCryptoAlgoSha256());
         byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
 
         StringBuilder hexString = new StringBuilder();
@@ -416,8 +432,8 @@ public class HighscoreLoader
     private String encrypt(String plainText) throws Exception
     {
         byte[] keyBytes = Settings.getHighscoreSecretKey().getBytes(StandardCharsets.UTF_8);
-        SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
-        Cipher cipher = Cipher.getInstance("AES");
+        SecretKeySpec key = new SecretKeySpec(keyBytes, Settings.getCryptoAlgoAes());
+        Cipher cipher = Cipher.getInstance(Settings.getCryptoAlgoAes());
         cipher.init(Cipher.ENCRYPT_MODE, key);
         byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
         return Base64.getEncoder().encodeToString(encryptedBytes);
@@ -426,8 +442,8 @@ public class HighscoreLoader
     private String decrypt(String encryptedText) throws Exception
     {
         byte[] keyBytes = Settings.getHighscoreSecretKey().getBytes(StandardCharsets.UTF_8);
-        SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
-        Cipher cipher = Cipher.getInstance("AES");
+        SecretKeySpec key = new SecretKeySpec(keyBytes, Settings.getCryptoAlgoAes());
+        Cipher cipher = Cipher.getInstance(Settings.getCryptoAlgoAes());
         cipher.init(Cipher.DECRYPT_MODE, key);
         byte[] decodedBytes = Base64.getDecoder().decode(encryptedText);
         byte[] decryptedBytes = cipher.doFinal(decodedBytes);

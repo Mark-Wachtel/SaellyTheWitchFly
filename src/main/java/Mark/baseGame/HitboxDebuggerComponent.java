@@ -12,7 +12,7 @@ public class HitboxDebuggerComponent extends Component {
     public void onAdded() {
         rect = new Rectangle();
         rect.setFill(null);
-        rect.setStrokeWidth(2.0);
+        rect.setStrokeWidth(Settings.getHitboxStrokeWidth());
         entity.getViewComponent().addChild(rect);
     }
 
@@ -36,13 +36,17 @@ public class HitboxDebuggerComponent extends Component {
         if (isColliding) {
             rect.setStroke(Settings.getHitboxColorColliding());
         } else {
-            String typeName = entity.getType().toString();
-            if (typeName.contains("PLAYER")) {
+            Object type = entity.getType();
+            if (type == EntityType.PLAYER) {
                 rect.setStroke(Settings.getHitboxColorPlayer());
-            } else if (typeName.contains("BARRIER")) {
+            } else if (type == EntityType.BARRIER) {
                 rect.setStroke(Settings.getHitboxColorBarrier());
-            } else {
+            } else if (type == EntityType.PROJECTILE) {
+                rect.setStroke(Settings.getHitboxColorProjectile());
+            } else if (type == EntityType.BUFF_POWERUP){
                 rect.setStroke(Settings.getHitboxColorBuff());
+            } else if (type == EntityType.DEBUFF_POWERUP){
+                rect.setStroke(Settings.getHitboxColorDebuff());
             }
         }
 
