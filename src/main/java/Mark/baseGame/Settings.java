@@ -147,7 +147,7 @@ public class Settings
     private static final double BARRIER_HITBOX_HEIGHT_RATIO = 0.8;
     private static final double BARRIER_GAP = 100.0;
 
-    //Wappon system
+    //Weapon system
     private static final String LINK_TO_DARK_MAGIC_IMAGE = "projectiles/darkMatter.png";
     private static final String LINK_TO_SHOOT_SOUND = "sounds/shootDarkMagic.wav";
     private static final int DARK_MAGIC_WIDTH = 40;
@@ -164,13 +164,13 @@ public class Settings
 
 
     //Links zu Bildern, Musik und Sounds
-    private static final String LINK_TO_BACKGROUND_MUSIC = "bgMusic.mp3"; //Name als String
+    private static final String LINK_TO_BACKGROUND_MUSIC = "bgMusic.mp3";
     private static final String LINK_TO_MAIN_MENU_MUSIC = "menuMusic.mp3";
     private static final String LINK_TO_CLICK_SOUND = "buttonClick.wav";
     private static final String LINK_TO_BUTTON_TICK_SOUND = "buttonTick.wav";
-    private static final String LINK_TO_BACKGROUND_IMAGE = "gameBackgroundLoopable.png"; //Name als String
-    private static final String LINK_TO_IMAGE_PLAYER_IDLE = "player/SaellyJump.png"; //Name als String
-    private static final String LINK_TO_IMAGE_PLAYER_JUMP = "player/SaellyJump.png"; //Name als String
+    private static final String LINK_TO_BACKGROUND_IMAGE = "gameBackgroundLoopable.png";
+    private static final String LINK_TO_IMAGE_PLAYER_IDLE = "player/SaellyJump.png";
+    private static final String LINK_TO_IMAGE_PLAYER_JUMP = "player/SaellyJump.png";
     private static final String LINK_TO_SOUND_BARRIER_PASSED = "barrierPassed.wav";
     private static final String LINK_TO_JUMP_SOUND = "Jump.wav";
     private static final String LINK_TO_SLOW_MOTION_PICKUP_SOUND = "pickup.wav";
@@ -259,6 +259,15 @@ public class Settings
     private static final int FONT_SIZE_GAMEOVER_RANK = 22;
     private static final int FONT_SIZE_GAMEOVER_ENTRY = 16;
     private static final int FONT_SIZE_GAMEOVER_INSTRUCT = 18;
+    private static final double ARCADE_INPUT_SPACING_X = 8.0;
+    private static final double ARCADE_INPUT_SPACING_Y = -8.0;
+    private static final double ARCADE_ARROW_BOUNCE_DIST = 3.0;
+    private static final String ARCADE_ARROW_UP_TEXT = "▲";
+    private static final String ARCADE_ARROW_DOWN_TEXT = "▼";
+    private static final String ARCADE_DEFAULT_LETTER = "A";
+    private static final String ARCADE_ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String ARCADE_INPUT_REGEX = "[a-zA-Z0-9]";
+    private static final double ARCADE_ANIM_DURATION_MS = 350.0;
     private static final double MUTE_BTN_ANIM_DURATION_MS = 150.0;
     private static final double MUTE_BTN_SCALE_HOVER = 1.1;
     private static final double MUTE_BTN_SCALE_NORMAL = 1.0;
@@ -277,11 +286,30 @@ public class Settings
     private static final String CSS_CLASS_LEADERBOARD_NORMAL = "leaderboard-entry-normal";
     private static final String CSS_CLASS_LEADERBOARD_GRAY = "leaderboard-entry-gray";
     private static final String CSS_CLASS_GAME_OVER_INSTRUCTION = "game-over-instruction";
+    private static final String CSS_CLASS_ARCADE_CONTAINER = "arcade-input-container";
+    private static final String CSS_CLASS_ARCADE_LETTER = "arcade-letter";
+    private static final String CSS_CLASS_ARCADE_LETTER_ACTIVE = "arcade-letter-active";
+    private static final String CSS_CLASS_ARCADE_ARROW = "arcade-arrow";
+    private static final String CSS_CLASS_RANK_TEXT = "game-over-rank-text";
+    private static final String CSS_CLASS_SCORE_TEXT = "game-over-score-text";
     private static final String FORMAT_GAMEOVER_LEADERBOARD = "#%d  %s: %-5s  %s: %06d %s";
     private static final String CSS_CLASS_LOADING_PROGRESS_BAR = "loading-progress-bar";
     private static final double INVISIBLE_BARRIER_THICKNESS = 50.0;
     private static final double POWERUP_SPAWN_X_OFFSET = 50.0;
     private static final String ERR_MSG_BUFF_IMAGE_NOT_FOUND = "WARNUNG: Buff-Bild nicht gefunden unter: ";
+    private static final String ACTION_SHOOT_DARK_MAGIC = "Shoot Dark Magic";
+    private static final String CSS_CLASS_START_INSTRUCTION = "start-instruction-text";
+    private static final String START_INSTRUCTION_BASE = "Starten mit %s";
+    private static final String LOADING_DOTS_1 = ".";
+    private static final String LOADING_DOTS_2 = "..";
+    private static final String LOADING_DOTS_3 = "...";
+    private static final double START_TEXT_OFFSET_Y = 60.0;
+    private static final double START_TEXT_ANIM_DURATION_MS = 500.0;
+    private static final double START_TEXT_JUMP_HEIGHT = -15.0;
+    private static final double START_TEXT_DELAY_MS = 50.0;
+    private static final String UI_RANK_SYMBOL = "#";
+    private static final String FORMAT_GAMEOVER_NAME_LABEL = "%s: ";
+    private static final String FORMAT_GAMEOVER_SCORE_LABEL = "%s: %s %s";
 
     //paralax layer clouds
     private static final double CLOUD_SPAWN_INTERVAL_SEC = 4.0;
@@ -404,6 +432,8 @@ public class Settings
     private static final double TITLEBAR_CLOSE_FADE_OUT_DURATION = 0.8;
     private static final String CSS_CLASS_CUSTOM_TITLE_BAR = "custom-title-bar";
     private static final String CSS_CLASS_MAGIC_CLOSE_BTN = "magic-close-button";
+    private static final String CSS_CLASS_TITLEBAR_FADE_BG = "titlebar-fade-bg";
+    private static final String CSS_CLASS_TITLEBAR_PARTICLE = "titlebar-particle";
     private static final double TITLEBAR_GLOW_NORMAL = 0.5;
     private static final double TITLEBAR_GLOW_HOVER = 0.9;
     private static final double TITLEBAR_BREATHING_SCALE_FROM = 1.0;
@@ -464,7 +494,7 @@ public class Settings
     //ExitCoordinator
     private static final String ERROR_MSG_SAVE_FAILED = "Error: Highscore or settings can't be safed!";
     //Highscore loader
-    private static final String HIGHSCORE_SERVER_URL = "http://217.160.103.10/highscore.php"; // Hier ist deine echte Strato-IP!
+    private static final String HIGHSCORE_SERVER_URL = "http://217.160.103.10/highscore.php";
     private static final String HIGHSCORE_SECRET_KEY = "kJg5JG7?@jh6%fh=";
     private static final String HIGHSCORE_PHP_PWD = "@kqo2kd9?ks{!";
     private static final long HTTP_TIMEOUT_SECONDS = 3;
@@ -499,6 +529,7 @@ public class Settings
     private static final double APP_LOADING_ANIM_DOT_THRESHOLD1 = 6;
     private static final double APP_LOADING_ANIM_DOT_THRESHOLD2 = 12;
     private static final String FORMAT_MENU_LABEL_VALUE = "%s: %s";
+    private static final String LANG_KEY_START_INSTRUCTION = "menu.startInstruction";
 
 
     //Error massages
@@ -1134,6 +1165,8 @@ public class Settings
     public static int getViewOrderTitlebar() { return VIEW_ORDER_TITLEBAR; }
     public static int getViewOrderModal() { return VIEW_ORDER_MODAL; }
     public static int getViewOrderUiTop() { return VIEW_ORDER_UI_TOP; }
+    public static String getCssClassTitlebarFadeBg() { return CSS_CLASS_TITLEBAR_FADE_BG; }
+    public static String getCssClassTitlebarParticle() {return CSS_CLASS_TITLEBAR_PARTICLE;}
     public static String getColorHighlightHex() { return COLOR_HIGHLIGHT_HEX; }
     public static String getActionWindowed() { return ACTION_WINDOWED; }
     public static String getActionBorderless() { return ACTION_BORDERLESS; }
@@ -1288,6 +1321,19 @@ public class Settings
     public static double getTitlebarParticleLifespanSec() { return TITLEBAR_PARTICLE_LIFESPAN_SEC; }
     public static Color getTitlebarParticleColor() { return TITLEBAR_PARTICLE_COLOR; }
     public static Color getTitlebarFadeBgColor() { return TITLEBAR_FADE_BG_COLOR; }
+    public static String getActionShootDarkMagic() { return ACTION_SHOOT_DARK_MAGIC; }
+    public static String getCssClassStartInstruction() { return CSS_CLASS_START_INSTRUCTION; }
+    public static double getStartTextOffsetY() { return START_TEXT_OFFSET_Y; }
+    public static double getStartTextAnimDurationMs() { return START_TEXT_ANIM_DURATION_MS; }
+    public static double getStartTextJumpHeight() { return START_TEXT_JUMP_HEIGHT; }
+    public static double getStartTextDelayMs() { return START_TEXT_DELAY_MS; }
+    public static String getStartInstructionBase() { return START_INSTRUCTION_BASE; }
+    public static String getLoadingDots1() { return LOADING_DOTS_1; }
+    public static String getLoadingDots2() { return LOADING_DOTS_2; }
+    public static String getLoadingDots3() { return LOADING_DOTS_3; }
+    public static String getCssClassRankText() { return CSS_CLASS_RANK_TEXT; }
+    public static String getCssClassScoreText() { return CSS_CLASS_SCORE_TEXT; }
+    public static String getLangKeyStartInstruction() { return LANG_KEY_START_INSTRUCTION; }
 
     //Error massages
     public static String getErrMsgServerTimeout() { return ERR_MSG_SERVER_TIMEOUT; }
@@ -1336,6 +1382,16 @@ public class Settings
     public static String getCssClassLoadingText() {return CSS_CLASS_LOADING_TEXT;}
     public static String getCssClassLeaderboardNormal() {return CSS_CLASS_LEADERBOARD_NORMAL;}
     public static String getCssClassLeaderboardGray() {return CSS_CLASS_LEADERBOARD_GRAY;}
+    public static String getCssClassArcadeContainer() { return CSS_CLASS_ARCADE_CONTAINER; }
+    public static String getCssClassArcadeLetter() { return CSS_CLASS_ARCADE_LETTER; }
+    public static String getCssClassArcadeLetterActive() { return CSS_CLASS_ARCADE_LETTER_ACTIVE; }
+    public static String getCssClassArcadeArrow() { return CSS_CLASS_ARCADE_ARROW; }
+    public static String getArcadeArrowUpText() { return ARCADE_ARROW_UP_TEXT; }
+    public static String getArcadeArrowDownText() { return ARCADE_ARROW_DOWN_TEXT; }
+    public static String getArcadeDefaultLetter() { return ARCADE_DEFAULT_LETTER; }
+    public static String getArcadeInputRegex() { return ARCADE_INPUT_REGEX; }
+    public static String getArcadeAllowedChars() { return ARCADE_ALLOWED_CHARS; }
+    public static double getArcadeAnimDurationMs() { return ARCADE_ANIM_DURATION_MS; }
     public static String getCssClassGameOverInstruction() {return CSS_CLASS_GAME_OVER_INSTRUCTION;}
     public static String getPrefsKeyMusicVol() { return PREFS_KEY_MUSIC_VOL; }
     public static String getPrefsKeySoundVol() { return PREFS_KEY_SOUND_VOL; }
@@ -1400,6 +1456,12 @@ public class Settings
     public static double getInvisibleBarrierThickness() { return INVISIBLE_BARRIER_THICKNESS; }
     public static double getPowerupSpawnXOffset() { return POWERUP_SPAWN_X_OFFSET; }
     public static String getErrMsgBuffImageNotFound() { return ERR_MSG_BUFF_IMAGE_NOT_FOUND; }
+    public static double getArcadeInputSpacingX() { return ARCADE_INPUT_SPACING_X; }
+    public static double getArcadeInputSpacingY() { return ARCADE_INPUT_SPACING_Y; }
+    public static double getArcadeArrowBounceDist() { return ARCADE_ARROW_BOUNCE_DIST; }
+    public static String getUiRankSymbol() { return UI_RANK_SYMBOL; }
+    public static String getFormatGameoverNameLabel() { return FORMAT_GAMEOVER_NAME_LABEL; }
+    public static String getFormatGameoverScoreLabel() { return FORMAT_GAMEOVER_SCORE_LABEL; }
 
 
     //Player animation getter

@@ -16,8 +16,8 @@ public class PlayerComponent extends Component
     private double timer = 0;
     private double startX;
     private double startY;
-    private static final double MAX_FALL_SPEED = Settings.getPlayerMaxFallSpeed(); //Maximale Fallgeschwindigkeit
-    private static final double MAX_RISE_SPEED = Settings.getPlayerMaxRiseSpeed(); //Maximale Aufstiegsgeschwindigkeit
+    private static final double MAX_FALL_SPEED = Settings.getPlayerMaxFallSpeed();
+    private static final double MAX_RISE_SPEED = Settings.getPlayerMaxRiseSpeed();
     private boolean canShoot = true;
     private Weapon currentWeapon = new DarkMagicWeapon();
 
@@ -128,14 +128,17 @@ public class PlayerComponent extends Component
 
     private void bounce()
     {
+        double bounceMargin = Settings.getPlayerBounceMargin();
+        physics.setVelocityX(0);
+
         if (entity.getY() < 0)
         {
-            physics.overwritePosition(new Point2D(entity.getX(), Settings.getPlayerBounceMargin()));
+            physics.overwritePosition(new Point2D(startX, bounceMargin));
             physics.setVelocityY(0);
         }
         else
         {
-            physics.overwritePosition(new Point2D(entity.getX(), FXGL.getAppHeight() - entity.getHeight() - 20));
+            physics.overwritePosition(new Point2D(startX, FXGL.getAppHeight() - entity.getHeight() - bounceMargin));
             jump();
         }
     }
@@ -163,7 +166,7 @@ public class PlayerComponent extends Component
 
     public void shoot()
     {
-        if (!canShoot || FXGL.getb(Settings.getKeyIsGameOver())) return;
+        if(FXGL.getb(Settings.getKeyIsGameOver()) || !canShoot || !FXGL.getb(Settings.getKeyGameStarted())) return;
 
         Point2D mousePos = FXGL.getInput().getMousePositionWorld();
 

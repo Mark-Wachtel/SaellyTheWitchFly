@@ -23,10 +23,7 @@ import com.almasb.fxgl.physics.CollisionHandler;
 import com.almasb.fxgl.physics.HitBox;
 import com.almasb.fxgl.physics.PhysicsComponent;
 import com.almasb.fxgl.texture.Texture;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.ScaleTransition;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -104,7 +101,7 @@ public class SaellyApp extends GameApplication {
 
 	private Rectangle gameOverBg;
 	private VBox gameOverBox;
-	private TextField nameInputField;
+	private ArcadeNameInput nameInputField;
 	private ScoreEntry currentRun;
 	private HighscoreLoader highscoreL;
 	private Circle statusIndicator;
@@ -182,7 +179,6 @@ public class SaellyApp extends GameApplication {
 							.with(new ObstacleComponent(true))
 							.buildAndAttach();
 
-					// --- NEU: Hier nutzen wir currentGap statt Settings.getBarrierGap() ---
 					double bottomBarrierY = gapTopY + currentGap;
 					var scaledBottomTexture = texture(Settings.getLinkToBottomBarrierImage(), barrierW, barrierH);
 
@@ -505,7 +501,7 @@ public class SaellyApp extends GameApplication {
 					if (type == BuffType.INVULNERABILITY || type == BuffType.SLOW_MOTION)
 					{
 						entityBuilder()
-								.zIndex(Settings.getZIndexGame() + 1) // Setzt den Effekt visuell ganz knapp VOR Saelly
+								.zIndex(Settings.getZIndexGame() + 1)
 								.with(new ActiveBuffComponent(player, type))
 								.buildAndAttach();
 					}
@@ -541,7 +537,7 @@ public class SaellyApp extends GameApplication {
 		getPhysicsWorld().addCollisionHandler(new com.almasb.fxgl.physics.CollisionHandler(EntityType.PROJECTILE, EntityType.BARRIER)
 		{
 			@Override
-			protected void onCollisionBegin(com.almasb.fxgl.entity.Entity projectile, com.almasb.fxgl.entity.Entity barrier)
+			protected void onCollisionBegin(Entity projectile, Entity barrier)
 			{
 				projectile.removeFromWorld();
 			}
@@ -931,19 +927,20 @@ public class SaellyApp extends GameApplication {
 			{
 				loadingSprite.setViewport(new Rectangle2D(x,y,frameWidth,frameHeight));
 
+				String baseText = getLocalizationService().getLocalizedString(Settings.getLangKeyLoadingText());
+
 				if (frameIndex < Settings.getAppLoadingAnimDotThreshold1())
 				{
-					loadingText.setText(getLocalizationService().getLocalizedString(Settings.getLangKeyLoadingText()) + ".");
+					loadingText.setText(baseText + Settings.getLoadingDots1());
 				}
 				else if (frameIndex < Settings.getAppLoadingAnimDotThreshold2())
 				{
-					loadingText.setText(getLocalizationService().getLocalizedString(Settings.getLangKeyLoadingText()) + "..");
+					loadingText.setText(baseText + Settings.getLoadingDots2());
 				}
 				else
 				{
-					loadingText.setText(getLocalizationService().getLocalizedString(Settings.getLangKeyLoadingText()) + "...");
+					loadingText.setText(baseText + Settings.getLoadingDots3());
 				}
-
 			});
 			timeline.getKeyFrames().add(frame);
 		}
@@ -962,6 +959,43 @@ public class SaellyApp extends GameApplication {
 		modalOverlay.setVisible(false);
 		modalOverlay.setViewOrder(Settings.getViewOrderModal());
 		getGameScene().addUINode(modalOverlay);
+
+		Preferences prefs = Preferences.userNodeForPackage(SaellyApp.class);
+		String jumpKeyStr = prefs.get(Settings.getPrefsKeyBindingPrefix() + Settings.getActionJump(), Settings.getDefaultKeyJump());
+
+		String localizedBase = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyStartInstruction());
+		String startTextStr = String.format(localizedBase, jumpKeyStr);
+
+		HBox startInstructionBox = new HBox(2);
+		startInstructionBox.setAlignment(Pos.CENTER);
+
+		for (int i = 0; i < startTextStr.length(); i++)
+		{
+			String letter = String.valueOf(startTextStr.charAt(i));
+
+			Text t = new Text(letter);
+
+			t.getStyleClass().add(Settings.getCssClassStartInstruction());
+
+			TranslateTransition tt = new TranslateTransition(javafx.util.Duration.millis(Settings.getStartTextAnimDurationMs()), t);
+			tt.setByY(Settings.getStartTextJumpHeight());
+			tt.setCycleCount(javafx.animation.Animation.INDEFINITE);
+			tt.setAutoReverse(true);
+			tt.setDelay(javafx.util.Duration.millis(i * Settings.getStartTextDelayMs()));
+
+			tt.play();
+			startInstructionBox.getChildren().add(t);
+		}
+
+		startInstructionBox.translateXProperty().bind(
+				startInstructionBox.widthProperty().divide(2).multiply(-1).add(getAppWidth() / 2.0)
+		);
+
+		startInstructionBox.setTranslateY(getAppHeight() / 2.0 - Settings.getStartTextOffsetY());
+
+		startInstructionBox.visibleProperty().bind(getbp(Settings.getKeyGameStarted()).not());
+
+		getGameScene().addUINode(startInstructionBox);
 	}
 	
 	@Override
@@ -984,8 +1018,7 @@ public class SaellyApp extends GameApplication {
 		vars.put(Settings.getKeyCurrentBarrierGap(), Settings.getBarrierGap());
 		vars.put(Settings.getKeyScoreActual(), Settings.getScoreMulti());
 	}
-	
-	
+
 	@Override
 	protected void initInput()
 	{
@@ -1067,8 +1100,15 @@ public class SaellyApp extends GameApplication {
 
 		onKeyDown(jumpKey, Settings.getActionJump(), () ->
 		{
-			if (getb(Settings.getKeyIsGameOver()) || getb(Settings.getKeyIsCrashing())) return;
-			getGameWorld().getSingleton(EntityType.PLAYER).getComponent(PlayerComponent.class).jump();
+			if (getb(Settings.getKeyIsGameOver()))
+			{
+				restartGameLogic();
+				return;
+			}
+
+			if (!getb(Settings.getKeyIsCrashing())) {
+				getGameWorld().getSingleton(EntityType.PLAYER).getComponent(PlayerComponent.class).jump();
+			}
 		});
 
 		String savedRestartStr = prefs.get(Settings.getPrefsKeyBindingPrefix()+ Settings.getActionRestart(), Settings.getDefaultKeyRestart());
@@ -1096,7 +1136,7 @@ public class SaellyApp extends GameApplication {
 					this.isFetchingData = true;
 
 					modalOverlay.setVisible(true);
-					String spielerName = nameInputField.getText().trim();
+					String spielerName = nameInputField.getName().trim();
 					String finalName = spielerName.isEmpty() ? Settings.getDefaultPlayerName() : spielerName.toUpperCase();
 					currentRun.setName(finalName);
 
@@ -1122,7 +1162,7 @@ public class SaellyApp extends GameApplication {
 			}
 		});
 
-		FXGL.getInput().addAction(new UserAction("Shoot Dark Magic") {
+		FXGL.getInput().addAction(new UserAction(Settings.getActionShootDarkMagic()) {
 			@Override
 			protected void onAction() {
 				var playerOpt = getGameWorld().getSingletonOptional(EntityType.PLAYER);
@@ -1250,22 +1290,25 @@ public class SaellyApp extends GameApplication {
 				HBox playerSlot = new HBox(Settings.getSpacingXlarge());
 				playerSlot.setAlignment(Pos.CENTER);
 
-				Text rankText = getUIFactoryService().newText("#" + rank, Color.web(Settings.getColorHighlightHex()),Settings.getFontSizeGameoverRank());
-				Text middleNameLabel = getUIFactoryService().newText(labelName + ": ", Color.web(Settings.getColorHighlightHex()),Settings.getFontSizeGameoverRank());
+				playerSlot.getStyleClass().add(Settings.getCssClassArcadeContainer());
 
-				this.nameInputField = new TextField(Settings.getDefaultPlayerName());
-				nameInputField.getStyleClass().add(Settings.getCssClassNameInput());
+				Text rankText = new Text(Settings.getUiRankSymbol() + rank);
+				rankText.getStyleClass().add(Settings.getCssClassRankText());
+
+				Text middleNameLabel = new Text(String.format(Settings.getFormatGameoverNameLabel(), labelName));
+				middleNameLabel.getStyleClass().add(Settings.getCssClassRankText());
+
+				this.nameInputField = new ArcadeNameInput();
 				nameInputField.setPrefWidth(Settings.getNameInputPrefWidth());
 				nameInputField.setAlignment(Pos.CENTER);
 
-				nameInputField.textProperty().addListener((observable,oldVal,newVal)->
-				{
-					if (newVal.length() > Settings.getMaxPlayerNameLength()) nameInputField.setText(oldVal);
-				});
-
 				String formattedCurrentScore = String.format(Settings.getFormatGameoverScore(), geti(Settings.getKeyScore()));
-				Text scoreText = getUIFactoryService().newText("", Color.web(Settings.getColorHighlightHex()), Settings.getFontSizeGameoverRank());
-				scoreText.textProperty().bind(localizedStringProperty(Settings.getLangKeyFinalScore()).concat(": ").concat(formattedCurrentScore).concat(" ").concat(localizedStringProperty(Settings.getLangKeyHighscorePoints())));
+				Text scoreText = new Text(String.format(Settings.getFormatGameoverScoreLabel(),
+						getLocalizationService().getLocalizedString(Settings.getLangKeyFinalScore()),
+						formattedCurrentScore,
+						getLocalizationService().getLocalizedString(Settings.getLangKeyHighscorePoints())));
+
+				scoreText.getStyleClass().add(Settings.getCssClassScoreText());
 
 				playerSlot.getChildren().addAll(rankText, middleNameLabel, nameInputField, scoreText);
 				leaderboardBox.getChildren().add(playerSlot);
@@ -1299,6 +1342,49 @@ public class SaellyApp extends GameApplication {
 		addUINode(gameOverBox);
 
 		nameInputField.requestFocus();
+
+		instruction.setOnMouseClicked(e ->{
+			restartGameLogic();
+		});
+	}
+
+	private void restartGameLogic()
+	{
+		if (this.isFetchingData) return;
+
+		if (nameInputField != null && currentRun != null)
+		{
+			if (gameOverBg != null) removeUINode(gameOverBg);
+			if (gameOverBox != null) removeUINode(gameOverBox);
+
+			this.isFetchingData = true;
+
+			modalOverlay.setVisible(true);
+
+			String spielerName = nameInputField.getName().trim();
+			String finalName = spielerName.isEmpty() ? Settings.getDefaultPlayerName() : spielerName.toUpperCase();
+			currentRun.setName(finalName);
+
+			int rank = highscoreList.indexOf(currentRun) + 1;
+
+			highscoreL.safe(finalName, currentRun.getScore(), rank, () ->
+			{
+				this.isFetchingData = false;
+				modalOverlay.setVisible(false);
+				set(Settings.getKeyIsGameOver(), false);
+				playGameMusic();
+				getGameController().startNewGame();
+			});
+		}
+		else
+		{
+			if (gameOverBg != null) removeUINode(gameOverBg);
+			if (gameOverBox != null) removeUINode(gameOverBox);
+
+			set(Settings.getKeyIsGameOver(), false);
+			playGameMusic();
+			getGameController().startNewGame();
+		}
 	}
 
 	private void updateServerStatusUI(boolean isReachable)

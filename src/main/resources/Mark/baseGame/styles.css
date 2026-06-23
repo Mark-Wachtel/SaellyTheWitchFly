@@ -26,6 +26,13 @@
     -fx-stroke-width: 5;
     -fx-stroke-line-cap: round;
 }
+.titlebar-fade-bg {
+    -fx-background-color: #000000;
+}
+
+.titlebar-particle {
+    -fx-fill: #ff9e00;
+}
 
 /* MainClass */
 .mute-button {
@@ -54,6 +61,11 @@
 .game-over-title {
     -fx-effect: dropshadow(gaussian, rgba(255, 158, 0, 0.8), 10, 0.5, 0, 0);
 }
+.game-over-rank-text, .game-over-score-text {
+    -fx-fill: #ff9e00;
+    -fx-font-family: "Eagle Lake";
+    -fx-font-size: 24px;
+}
 
 /* Pause menu */
 .pause-menu-bg {
@@ -69,9 +81,13 @@
     -fx-padding: 10 30 10 30;
     -fx-cursor: hand;
 }
-.magical-button:hover {
+.magical-button:hover, .magical-button:focused {
     -fx-background-color: #ff9e00;
     -fx-text-fill: white;
+}
+.magical-btn:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 .magical-title {
     -fx-font-family: "Eagle Lake";
@@ -146,13 +162,19 @@
 /* Ingame */
 .ingame-score-text {
     -fx-font-family: "Eagle Lake";
-    -fx-fill: #ff9e00; /* Hier ist jetzt das exakte Orange! */
+    -fx-fill: #ff9e00;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.9), 5, 0.6, 2, 2);
 }
 .ingame-lives-text {
     -fx-font-family: "Eagle Lake";
-    -fx-fill: #ff9e00; /* Passend zum Highlight-Orange deiner Settings */
+    -fx-fill: #ff9e00;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.9), 5, 0.6, 2, 2);
+}
+.start-instruction-text {
+    -fx-font-family: "Eagle Lake";
+    -fx-font-size: 96px;
+    -fx-fill: #ff9e00;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 5, 0.5, 2, 2);
 }
 /* Overlays */
 .dim-overlay-bg
@@ -171,4 +193,30 @@
 }
 .loading-text {
     -fx-fill: white;
+}
+/* NameInput */
+.arcade-input-container {
+    -fx-background-color: rgba(0, 0, 0, 0.7);
+    -fx-padding: 5 15 5 15;
+    -fx-background-radius: 10;
+    -fx-border-color: #ff9e00;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+}
+
+.arcade-letter {
+    -fx-font-family: "Eagle Lake";
+    -fx-font-size: 24px;
+    -fx-fill: #f3e5ab;
+}
+
+.arcade-letter-active {
+    -fx-fill: #ff9e00;
+    -fx-effect: dropshadow(gaussian, rgba(255, 158, 0, 0.8), 10, 0.5, 0, 0);
+}
+
+.arcade-arrow {
+    -fx-font-family: "Arial";
+    -fx-font-size: 18px;
+    -fx-fill: #ff9e00;
 }

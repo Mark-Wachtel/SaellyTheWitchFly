@@ -180,6 +180,10 @@ public class CustomTitleBar extends HBox
 				clickAnim.setOnFinished(event -> {
 
 					var emitter = ParticleEmitters.newExplosionEmitter(Settings.getTitlebarParticleEmitterSize());
+
+					Circle particleShape = new Circle(Settings.getTitlebarParticleRadius());
+					particleShape.getStyleClass().add(Settings.getCssClassTitlebarParticle());
+
 					emitter.setSourceImage(new Circle(Settings.getTitlebarParticleRadius(), Settings.getTitlebarParticleColor()).snapshot(null, null));
 					emitter.setNumParticles(Settings.getTitlebarParticleNum());
 
@@ -193,7 +197,7 @@ public class CustomTitleBar extends HBox
 					magicX.setVisible(false);
 
 					var wholeScene = getScene().getRoot();
-					getScene().setFill(Settings.getTitlebarFadeBgColor());
+					wholeScene.getStyleClass().add(Settings.getCssClassTitlebarFadeBg());
 
 					FadeTransition fadeOut = new FadeTransition(Duration.seconds(Settings.getTitlebarCloseFadeOutDuration()), wholeScene);
 					fadeOut.setToValue(0.0);
@@ -218,6 +222,7 @@ public class CustomTitleBar extends HBox
 				dragOffsetY = e.getSceneY();
 			}
 			if(onDragStart != null) onDragStart.run();
+			e.consume();
 		});
 		setOnMouseDragged(e -> {
 			if(e.getTarget() instanceof Button) return;
@@ -227,9 +232,11 @@ public class CustomTitleBar extends HBox
 				window.setX(e.getScreenX() - dragOffsetX);
 				window.setY(e.getScreenY() - dragOffsetY);
 			}
+			e.consume();
 		});
 		setOnMouseReleased (e -> {
 			if(onDragEnd != null) onDragEnd.run();
+			e.consume();
 		});
 	}
 
