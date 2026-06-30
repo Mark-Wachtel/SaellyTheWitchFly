@@ -7,10 +7,7 @@ import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.localization.Language;
 import com.almasb.fxgl.scene.Scene;
 import com.almasb.fxgl.texture.Texture;
-import javafx.animation.Animation;
-import javafx.animation.PauseTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.event.EventHandler;
@@ -185,9 +182,27 @@ public class CustomMainMenuScene extends FXGLMenu
 
     private void initTitleBar() {
         CustomTitleBar titleBar = new CustomTitleBar(Settings.getLinkToLogo());
-        titleBar.setOnCloseClicked(() -> FXGL.getGameController().exit());
-        StackPane.setAlignment(titleBar, Pos.TOP_CENTER);
-        mainRootPane.getChildren().add(titleBar);
+
+        titleBar.setPrefHeight(CustomTitleBar.TITLE_BAR_HEIGHT);
+        titleBar.setMinHeight(CustomTitleBar.TITLE_BAR_HEIGHT);
+        titleBar.setMaxHeight(CustomTitleBar.TITLE_BAR_HEIGHT);
+        titleBar.prefWidthProperty().bind(FXGL.getPrimaryStage().widthProperty());
+
+        titleBar.setOnCloseClicked(() -> {
+            SceneTransitionCoordinator ec = ((SaellyApp) FXGL.getAppCast()).getSceneTransitionCoordinator();
+            if (ec != null) {
+                ec.requestExit(() -> FXGL.getGameController().exit());
+            } else {
+                FXGL.getGameController().exit();
+            }
+        });
+
+        VBox safeBox = new VBox(titleBar);
+        safeBox.setAlignment(Pos.TOP_CENTER);
+        safeBox.setPickOnBounds(false);
+
+        StackPane.setAlignment(safeBox, Pos.TOP_CENTER);
+        mainRootPane.getChildren().add(safeBox);
     }
 
     private void initGameTitle() {
@@ -288,11 +303,12 @@ public class CustomMainMenuScene extends FXGLMenu
         btnNewGame.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnNewGame.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuNewGame()));
         btnNewGame.setOnAction(e -> {
-            if (app != null) {
+            e.consume();
+            app.getSceneTransitionCoordinator().transition(() -> {
                 app.setGameUIVisibility(true);
                 app.playGameMusic();
-            }
-            fireNewGame();
+                FXGL.getGameController().startNewGame();
+            });
         });
 
         Button btnOptions = new Button();
@@ -530,7 +546,11 @@ public class CustomMainMenuScene extends FXGLMenu
         Button btnYes = new Button();
         btnYes.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuYes()));
         btnYes.getStyleClass().add(Settings.getCssClassMagicalBtn());
-        btnYes.setOnAction(e -> FXGL.getGameController().exit());
+        btnYes.setOnAction(e -> {
+            SceneTransitionCoordinator ec = ((SaellyApp) FXGL.getAppCast()).getSceneTransitionCoordinator();
+            if (ec != null) ec.requestExit(() ->FXGL.getGameController().exit());
+            else FXGL.getGameController().exit();
+        });
 
         Button btnNo = new Button();
         btnNo.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuNo()));
@@ -546,33 +566,81 @@ public class CustomMainMenuScene extends FXGLMenu
         corruptedBox.setAlignment(Pos.CENTER);
         corruptedBox.setVisible(false);
 
+        corruptedBox.setMaxSize(VBox.USE_PREF_SIZE, VBox.USE_PREF_SIZE);
+
+        corruptedBox.getStyleClass().add("arcade-input-container");
+
         Text textCorrupted = new Text();
         textCorrupted.getStyleClass().add(Settings.getCssClassMagicalText());
         textCorrupted.setTextAlignment(TextAlignment.CENTER);
 
         textCorrupted.textProperty().bind(Bindings.createStringBinding(() -> {
-            HighscoreLoader hl = app.getHighscoreL();
-            String timestamp = (hl != null) ? hl.getLastSyncTimestamp() : "";
-            String msgCorrupted = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyCorruptedFile());
-            String msgSync = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyLastSync());
-            return String.format(Settings.getFormatCorruptedMessage(), msgCorrupted, msgSync, timestamp);
+            try {
+                HighscoreLoader hl = app.getHighscoreL();
+                String timestamp = (hl != null && hl.getLastSyncTimestamp() != null) ? hl.getLastSyncTimestamp() : "Unbekannt";
+                String msgCorrupted = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyCorruptedFile());
+                String msgSync = FXGL.getLocalizationService().getLocalizedString(Settings.getLangKeyLastSync());
+                return String.format(Settings.getFormatCorruptedMessage(), msgCorrupted, msgSync, timestamp);
+            } catch (Exception ex) {
+                System.err.println("ACHTUNG: Text-Binding Crash im Corrupted-Fenster: " + ex.getMessage());
+                return "Fehler beim Laden der Datei!\nSpielstand wurde wiederhergestellt.";
+            }
         }, FXGL.getLocalizationService().selectedLanguageProperty()));
 
         Button btnCorruptedOk = new Button();
         btnCorruptedOk.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnCorruptedOk.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuYes()));
-        btnCorruptedOk.setOnAction(e -> switchMenuVisibility(corruptedBox, menuBox));
+
+        btnCorruptedOk.setOnAction(e -> animateCorruptedBox(false, () -> {
+            menuBox.setScaleX(1.0);
+            menuBox.setScaleY(1.0);
+            menuBox.setVisible(true);
+        }));
 
         corruptedBox.getChildren().addAll(textCorrupted, btnCorruptedOk);
     }
 
+    private void animateCorruptedBox(boolean show, Runnable onFinished) {
+        SceneTransitionCoordinator coordinator =
+                ((SaellyApp) FXGL.getAppCast()).getSceneTransitionCoordinator();
+
+        if (show) {
+            corruptedBox.setDisable(false);
+            corruptedBox.toFront();
+            coordinator.popIn(corruptedBox, Duration.seconds(0.4), onFinished);
+        } else {
+            corruptedBox.setDisable(true);
+            coordinator.popOut(corruptedBox, Duration.seconds(0.2), onFinished);
+        }
+    }
+
     private void switchMenuVisibility(VBox dynamicToHide, VBox dynamicToShow) {
-        dynamicToHide.setVisible(false);
-        dynamicToShow.setVisible(true);
-        Platform.runLater(() -> {
-            List<Node> nodes = getVisibleFocusableNodes((Parent) getRoot());
-            if (!nodes.isEmpty()) nodes.getFirst().requestFocus();
-        });
+        mainRootPane.setDisable(true);
+
+        SceneTransitionCoordinator coordinator = ((SaellyApp) FXGL.getAppCast()).getSceneTransitionCoordinator();
+
+        if (coordinator != null) {
+            coordinator.fadeOut(dynamicToHide, Duration.seconds(0.15), () -> {
+                dynamicToHide.setVisible(false);
+                dynamicToHide.setOpacity(1.0);
+
+                coordinator.fadeIn(dynamicToShow, Duration.seconds(0.15), () -> {
+                    mainRootPane.setDisable(false);
+                    Platform.runLater(() -> {
+                        List<Node> nodes = getVisibleFocusableNodes((Parent) getRoot());
+                        if (!nodes.isEmpty()) nodes.getFirst().requestFocus();
+                    });
+                });
+            });
+        } else {
+            dynamicToHide.setVisible(false);
+            dynamicToShow.setVisible(true);
+            mainRootPane.setDisable(false);
+            Platform.runLater(() -> {
+                List<Node> nodes = getVisibleFocusableNodes((Parent) getRoot());
+                if (!nodes.isEmpty()) nodes.getFirst().requestFocus();
+            });
+        }
     }
 
     private void assembleLayout() {
@@ -606,18 +674,26 @@ public class CustomMainMenuScene extends FXGLMenu
         });
     }
 
-    public void activateMainMenu()
-    {
+    public void activateMainMenu() {
         SaellyApp app = (SaellyApp) FXGL.getAppCast();
         app.setGameUIVisibility(false);
         app.playMainMenuMusic();
+    }
 
-        if (!hasCheckedCorruption) {
-            hasCheckedCorruption = true;
-            if (app.getHighscoreL() != null && app.getHighscoreL().isFileCorruptedAndRestored()) {
-                switchMenuVisibility(menuBox, corruptedBox);
-            }
-        }
+    private void showCorruptedBox() {
+        Platform.runLater(() -> {
+
+            menuBox.setVisible(false);
+            corruptedBox.setVisible(true);
+            corruptedBox.setManaged(true);
+            corruptedBox.setDisable(false);
+
+            corruptedBox.toFront();
+
+            animateCorruptedBox(true, () -> corruptedBox.requestFocus());
+
+            System.out.println("DEBUG: corruptedBox wurde auf sichtbar gesetzt.");
+        });
     }
 
     private void playClickSound() {
@@ -668,11 +744,21 @@ public class CustomMainMenuScene extends FXGLMenu
             shield.play();
         }
 
-        VBox[] boxes = {exitBox, optionsBox, controlsBox, languagesBox, leaderboardBox, creditsBox, corruptedBox};
+        VBox[] boxes = {menuBox, exitBox, optionsBox, controlsBox, languagesBox, leaderboardBox, creditsBox, corruptedBox};
         for (VBox box : boxes) if (box != null) box.setVisible(false);
-        if (menuBox != null) menuBox.setVisible(true);
+
+        SaellyApp app = (SaellyApp) FXGL.getAppCast();
 
         Platform.runLater(() -> {
+            if (!hasCheckedCorruption && app.getHighscoreL() != null && app.getHighscoreL().isFileCorruptedAndRestored()) {
+                hasCheckedCorruption = true;
+                animateCorruptedBox(true, null);
+            } else {
+                if (!corruptedBox.isVisible() && menuBox != null) {
+                    menuBox.setVisible(true);
+                }
+            }
+
             List<Node> nodes = getVisibleFocusableNodes((Parent) getRoot());
             if (!nodes.isEmpty()) nodes.getFirst().requestFocus();
         });

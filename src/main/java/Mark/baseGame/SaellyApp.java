@@ -62,7 +62,7 @@ public class SaellyApp extends GameApplication {
 	private boolean isAltDown = false;
 
 	private WindowManager windowManager;
-    private ExitCoordinator exitCoordinator;
+	private SceneTransitionCoordinator sceneTransitionCoordinator;
     private CustomTitleBar titleBar;
 	private ScrollingBackgroundView bgView;
 
@@ -91,6 +91,8 @@ public class SaellyApp extends GameApplication {
 	private Image scoreX10BuffImage;
 	private Image invulnerableBuffImage;
 	private Image extraLivesBuffImage;
+	private Image curtainCloseImage;
+	private Image curtainOpenImage;
 
 	private Sound gameOverSound;
 	private Sound buttonTickSound;
@@ -107,7 +109,6 @@ public class SaellyApp extends GameApplication {
 	private Circle statusIndicator;
 	private Boolean isServerReachable = null;
 	private boolean isFetchingData = false;
-	private StackPane modalOverlay;
 	private Text gameVersion;
 	private HBox updatedBox;
 	private HBox topBar;
@@ -303,12 +304,16 @@ public class SaellyApp extends GameApplication {
 		FXGL.getSettings().setGlobalMusicVolume(prefs.getDouble(Settings.getPrefsKeyMusicVol(), Settings.getDefaultRestoreMusicVolume()));
 		FXGL.getSettings().setGlobalSoundVolume(prefs.getDouble(Settings.getPrefsKeySoundVol(), Settings.getDefaultRestoreSoundVolume()));
 
+		sceneTransitionCoordinator = new SceneTransitionCoordinator();
+
 		int muteSize = Settings.getIconSizeMute();
 		soundOnIcon = getAssetLoader().loadTexture(Settings.getLinkToUiSoundUnmutedImage(),muteSize,muteSize);
 		soundOffIcon = getAssetLoader().loadTexture(Settings.getLinkToUiSoundMutedImage(),muteSize,muteSize);
 		heartIcon = getAssetLoader().loadTexture(Settings.getLinkToHeartUiImage(),Settings.getHeartUiImageWidth(),Settings.getHeartUiImageHeight());
 		int buffSize = Settings.getIconSizeBuff();
 		buffIcon = getAssetLoader().loadTexture(Settings.getLinkToInvulnerableImage(),buffSize,buffSize);
+		curtainCloseImage = getAssetLoader().loadImage(Settings.getCurtainCloseTexture());
+		curtainOpenImage = getAssetLoader().loadImage(Settings.getCurtainOpenTexture());
 
 		backgroundMusic = getAssetLoader().loadMusic(Settings.getLinkToBackgroundMusic());
 		menuMusic = getAssetLoader().loadMusic(Settings.getLinkToMenuMusic());
@@ -335,8 +340,8 @@ public class SaellyApp extends GameApplication {
 
 		highscoreL.pingServer(this::updateServerStatusUI);
 		playMainMenuMusic();
-
 	}
+
 	@Override
 	protected void initGame()
 	{
@@ -539,6 +544,7 @@ public class SaellyApp extends GameApplication {
 			@Override
 			protected void onCollisionBegin(Entity projectile, Entity barrier)
 			{
+				DarkMagicWeapon.spawnExplosion(projectile.getCenter());
 				projectile.removeFromWorld();
 			}
 		});
@@ -685,12 +691,13 @@ public class SaellyApp extends GameApplication {
 								{
 									return;
 								}
-							}
-							isSwitchingScene = true;
-							playGameMusic();
-							getGameController().gotoPlay();
-							isSwitchingScene = false;
-						}
+								isSwitchingScene = true;
+								pauseMenu.closeMenuWithAnimation(() -> {
+									playGameMusic();
+									getGameController().gotoPlay();
+									isSwitchingScene = false;
+								});
+						}}
 					}
 				});
 
@@ -705,11 +712,6 @@ public class SaellyApp extends GameApplication {
 				titleBar.prefWidthProperty().bind(stage.widthProperty());
 				titleBar.setViewOrder(Settings.getViewOrderTitlebar());
 				getGameScene().getRoot().getChildren().add(titleBar);
-
-				exitCoordinator = new ExitCoordinator(() ->
-				{
-					getGameController().exit();
-				});
 
 				titleBar.setOnLogoClicked(() ->
 				{
@@ -732,13 +734,25 @@ public class SaellyApp extends GameApplication {
 					}
 					else if (isMenuScene)
 					{
-						playGameMusic();
+						if (currentScene instanceof CustomPauseMenuScene)
+						{
+							CustomPauseMenuScene pauseMenu = (CustomPauseMenuScene) currentScene;
+							if (pauseMenu.handleEscapeBack())
+							{
+								return;
+							}
 
-						getGameController().gotoPlay();
+							isSwitchingScene = true;
+							pauseMenu.closeMenuWithAnimation(() -> {
+								playGameMusic();
+								getGameController().gotoPlay();
+								isSwitchingScene = false;
+							});
+						}
 					}
 				});
 
-				titleBar.setOnCloseClicked(exitCoordinator::requestExit);
+				titleBar.setOnCloseClicked(() -> sceneTransitionCoordinator.requestExit(() -> FXGL.getGameController().exit()));
 
 				windowManager = new WindowManager(stage);
 
@@ -888,10 +902,6 @@ public class SaellyApp extends GameApplication {
 		updatedBox.setViewOrder(Settings.getViewOrderUiTop());
 		getGameScene().addUINode(updatedBox);
 
-		modalOverlay = new StackPane();
-		modalOverlay.setMinSize(getAppWidth(), getAppHeight());
-		modalOverlay.setMaxSize(getAppWidth(), getAppHeight());
-
 		Rectangle dimBg = new Rectangle(getAppWidth(), getAppHeight());
 		dimBg.getStyleClass().add(Settings.getCssClassDimOverlay());
 
@@ -953,12 +963,6 @@ public class SaellyApp extends GameApplication {
 		VBox contentBox = new VBox(Settings.getSpacingSmall());
 		contentBox.setAlignment(Pos.CENTER);
 		contentBox.getChildren().addAll(loadingSprite,loadingText);
-
-
-		modalOverlay.getChildren().addAll(dimBg,contentBox);
-		modalOverlay.setVisible(false);
-		modalOverlay.setViewOrder(Settings.getViewOrderModal());
-		getGameScene().addUINode(modalOverlay);
 
 		Preferences prefs = Preferences.userNodeForPackage(SaellyApp.class);
 		String jumpKeyStr = prefs.get(Settings.getPrefsKeyBindingPrefix() + Settings.getActionJump(), Settings.getDefaultKeyJump());
@@ -1126,39 +1130,7 @@ public class SaellyApp extends GameApplication {
 		{
 			if (getb(Settings.getKeyIsGameOver()))
 			{
-				if (this.isFetchingData) return;
-				if (nameInputField != null && currentRun != null)
-				{
-
-					if (gameOverBg != null) removeUINode(gameOverBg);
-					if (gameOverBox != null) removeUINode(gameOverBox);
-
-					this.isFetchingData = true;
-
-					modalOverlay.setVisible(true);
-					String spielerName = nameInputField.getName().trim();
-					String finalName = spielerName.isEmpty() ? Settings.getDefaultPlayerName() : spielerName.toUpperCase();
-					currentRun.setName(finalName);
-
-					int rank = highscoreList.indexOf(currentRun) +1;
-
-					highscoreL.safe(finalName, currentRun.getScore(),rank, ()->
-					{
-						this.isFetchingData = false;
-						modalOverlay.setVisible(false);
-						set(Settings.getKeyIsGameOver(), false);
-						playGameMusic();
-						getGameController().startNewGame();
-					});
-				}
-				else
-				{
-					if (gameOverBg != null) removeUINode(gameOverBg);
-					if (gameOverBox != null) removeUINode(gameOverBox);
-					set(Settings.getKeyIsGameOver(), false);
-					playGameMusic();
-					getGameController().startNewGame();
-				}
+				restartGameLogic();
 			}
 		});
 
@@ -1193,50 +1165,27 @@ public class SaellyApp extends GameApplication {
 		}, Duration.minutes(Settings.getHeartbeatIntervalMinutes()));
 	}
 
-	public void gameOver()
-	{
-
+	public void gameOver(){
 		if (getb(Settings.getKeyIsGameOver()) || getb(Settings.getKeyIsCrashing())) return;
-
 		set(Settings.getKeyLives(), 0);
 		set(Settings.getKeyIsCrashing(), true);
-
-
 		set(Settings.getKeyGeneralSpeed(), 0.0);
 		set(Settings.getKeyBarrierSpeed(), 0.0);
 		if (backgroundMusic != null) getAudioPlayer().stopMusic(backgroundMusic);
 		getAudioPlayer().playSound(getAssetLoader().loadSound(Settings.getLinkToGameOverSoundeffect()));
-
-		this.isFetchingData = true;
-		highscoreL.pingServer(this::updateServerStatusUI);
-		highscoreL.fetchHighscores(fetchedList ->
-		{
-			this.highscoreList = fetchedList;
-			this.isFetchingData = false;
-
-			if (getb(Settings.getKeyIsGameOver()) && modalOverlay.isVisible())
-			{
-				buildAndShowGameOverUI();
-				modalOverlay.setVisible(false);
-			}
-		});
-
-		getGameTimer().runOnceAfter(() ->
-		{
+		this.isFetchingData = true;getGameTimer().runOnceAfter(() ->    {
 			set(Settings.getKeyIsGameOver(), true);
-
 			if (gameOverMusic != null) getAudioPlayer().loopMusic(gameOverMusic);
 			if (topBar != null) topBar.setVisible(false);
-
-			if (this.isFetchingData)
-			{
-				modalOverlay.setVisible(true);
-			}
-			else
-			{
-				buildAndShowGameOverUI();
-			}
-		}, Duration.seconds(Settings.getGameOverDelaySeconds()));
+			sceneTransitionCoordinator.loadingFade(                done ->                {
+				highscoreL.pingServer(this::updateServerStatusUI);
+				highscoreL.fetchHighscores(fetchedList -> {
+					this.highscoreList = fetchedList;
+					this.isFetchingData = false;
+					done.run();
+				});
+				},this::buildAndShowGameOverUI);
+			},Duration.seconds(Settings.getGameOverDelaySeconds()));
 	}
 
 	private void buildAndShowGameOverUI()
@@ -1336,55 +1285,62 @@ public class SaellyApp extends GameApplication {
 		instruction.textProperty().bind(localizedStringProperty(Settings.getLangKeyPressEnter()));
 		instruction.getStyleClass().add(Settings.getCssClassGameOverInstruction());
 
-		gameOverBox.getChildren().addAll(title,leaderboardBox,instruction);
+		gameOverBox.getChildren().addAll(title, leaderboardBox, instruction);
 
 		addUINode(gameOverBg);
 		addUINode(gameOverBox);
 
-		nameInputField.requestFocus();
+		sceneTransitionCoordinator.fadeIn(gameOverBg, Duration.seconds(0.4), null);
+		sceneTransitionCoordinator.slideInFromTop(gameOverBox, Duration.seconds(0.4),
+				() -> nameInputField.requestFocus());
 
-		instruction.setOnMouseClicked(e ->{
+		instruction.setOnMouseClicked(e -> {
 			restartGameLogic();
 		});
 	}
 
-	private void restartGameLogic()
+	private void hideGameOverMenu(Runnable onFinished)
 	{
-		if (this.isFetchingData) return;
-
-		if (nameInputField != null && currentRun != null)
+		if (gameOverBox == null || gameOverBg == null)
 		{
-			if (gameOverBg != null) removeUINode(gameOverBg);
-			if (gameOverBox != null) removeUINode(gameOverBox);
-
-			this.isFetchingData = true;
-
-			modalOverlay.setVisible(true);
-
-			String spielerName = nameInputField.getName().trim();
-			String finalName = spielerName.isEmpty() ? Settings.getDefaultPlayerName() : spielerName.toUpperCase();
-			currentRun.setName(finalName);
-
-			int rank = highscoreList.indexOf(currentRun) + 1;
-
-			highscoreL.safe(finalName, currentRun.getScore(), rank, () ->
-			{
-				this.isFetchingData = false;
-				modalOverlay.setVisible(false);
-				set(Settings.getKeyIsGameOver(), false);
-				playGameMusic();
-				getGameController().startNewGame();
-			});
+			if (onFinished != null) onFinished.run();
+			return;
 		}
-		else
-		{
-			if (gameOverBg != null) removeUINode(gameOverBg);
-			if (gameOverBox != null) removeUINode(gameOverBox);
+		gameOverBox.setDisable(true);
+		sceneTransitionCoordinator.fadeOut(gameOverBg, Duration.seconds(0.4), null);
+		sceneTransitionCoordinator.slideOutToTop(gameOverBox, Duration.seconds(0.4), () -> {
+			removeUINode(gameOverBg);
+			removeUINode(gameOverBox);
+			gameOverBg = null;
+			gameOverBox = null;
+			if (onFinished != null) onFinished.run();
+		});
+	}
 
-			set(Settings.getKeyIsGameOver(), false);
-			playGameMusic();
-			getGameController().startNewGame();
-		}
+	private void restartGameLogic(){    if (this.isFetchingData) return;    this.isFetchingData = true;
+		hideGameOverMenu(() ->
+				sceneTransitionCoordinator.loadingFade(            done -> {
+					Runnable startGame = () ->                {
+						set(Settings.getKeyIsGameOver(), false);
+						playGameMusic();
+						getGameController().startNewGame();
+						sceneTransitionCoordinator.runWhenSceneActive(getSceneService().getGameScene(), () ->                    {
+							this.isFetchingData = false;
+							done.run();
+						});
+					};
+					if (nameInputField != null && currentRun != null)                {
+						String spielerName = nameInputField.getName().trim();
+						String finalName = spielerName.isEmpty() ? Settings.getDefaultPlayerName() : spielerName.toUpperCase();
+						currentRun.setName(finalName);
+						int rank = highscoreList.indexOf(currentRun) + 1;
+						highscoreL.safe(finalName, currentRun.getScore(), rank, startGame);
+					}
+					else
+					{
+						startGame.run();
+					}
+					},null));
 	}
 
 	private void updateServerStatusUI(boolean isReachable)
@@ -1480,6 +1436,8 @@ public class SaellyApp extends GameApplication {
 			if (backgroundMusic != null) getAudioPlayer().loopMusic(backgroundMusic);
 		}
 	}
+
+	public SceneTransitionCoordinator getSceneTransitionCoordinator() {return sceneTransitionCoordinator;}
 
 	public void setGameUIVisibility(boolean visible)
 	{

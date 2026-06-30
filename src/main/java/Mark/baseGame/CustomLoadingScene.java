@@ -1,6 +1,5 @@
 package Mark.baseGame;
 
-import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.LoadingScene;
 import com.almasb.fxgl.dsl.FXGL;
 import javafx.geometry.Rectangle2D;
@@ -17,8 +16,7 @@ import javafx.util.Duration;
 
 import java.util.prefs.Preferences;
 
-public class CustomLoadingScene extends LoadingScene
-{
+public class CustomLoadingScene extends LoadingScene {
 
     private Text loadingText;
     private Timeline dotsTimeline;
@@ -37,12 +35,9 @@ public class CustomLoadingScene extends LoadingScene
 
         getContentRoot().getChildren().clear();
 
-        double width = FXGL.getAppWidth();
-        double height = FXGL.getAppHeight();
-
         ImageView background = new ImageView(FXGL.image(Settings.getLinkToInitLoadingScreenBackground()));
-        background.setFitWidth(width);
-        background.setFitHeight(height);
+        background.fitWidthProperty().bind(FXGL.getPrimaryStage().widthProperty());
+        background.fitHeightProperty().bind(FXGL.getPrimaryStage().heightProperty());
 
         ImageView animImageView = new ImageView(FXGL.image(Settings.getLinkToLoadingAnimation()));
 
@@ -76,7 +71,7 @@ public class CustomLoadingScene extends LoadingScene
         String baseText = savedLang.equals(Settings.getLangEnglish()) ? Settings.getFallbackLoadingTextEn() : Settings.getFallbackLoadingTextDe();
 
         final String bText = baseText;
-        loadingText = FXGL.getUIFactoryService().newText(baseText, Color.TRANSPARENT, Settings.getLoadingTextSize()); // Textfarbe wird von CSS übernommen!
+        loadingText = FXGL.getUIFactoryService().newText(baseText, Color.TRANSPARENT, Settings.getLoadingTextSize());
         loadingText.getStyleClass().add(Settings.getCssClassLoadingText());
 
         dotsTimeline = new Timeline(new KeyFrame(Duration.seconds(Settings.getLoadingDotsDurationSeconds()), event -> {
@@ -86,37 +81,38 @@ public class CustomLoadingScene extends LoadingScene
         }));
         dotsTimeline.setCycleCount(Animation.INDEFINITE);
 
+        double fixedWidth = FXGL.getAppWidth();
         ProgressBar progressBar = new ProgressBar();
-        progressBar.setPrefWidth(width * Settings.getLoadingBarWidthRatio());
+        progressBar.setPrefWidth(fixedWidth * Settings.getLoadingBarWidthRatio());
         progressBar.setPrefHeight(Settings.getLoadingBarHeight());
         progressBar.setProgress(-1.0);
         progressBar.getStyleClass().add(Settings.getCssClassLoadingProgressBar());
 
         VBox container = new VBox(Settings.getLoadingVBoxSpacing(), animImageView, loadingText, progressBar);
         container.setAlignment(Pos.CENTER);
-        container.setPrefSize(width, height);
+        container.prefWidthProperty().bind(FXGL.getPrimaryStage().widthProperty());
+        container.prefHeightProperty().bind(FXGL.getPrimaryStage().heightProperty());
 
         getContentRoot().getChildren().addAll(background, container);
     }
 
     @Override
     public void onCreate() {
-        if (dotsTimeline != null) {
-            dotsTimeline.play();
-        }
-        if (animationTimeline != null) {
-            animationTimeline.play();
+        if (dotsTimeline != null) dotsTimeline.play();
+        if (animationTimeline != null) animationTimeline.play();
+
+        SceneTransitionCoordinator coordinator =
+                ((SaellyApp) FXGL.getAppCast()).getSceneTransitionCoordinator();
+        if (coordinator != null) {
+            coordinator.fadeIn(getContentRoot(), Duration.seconds(0.5), null);
+        } else {
+            getContentRoot().setOpacity(1.0);
         }
     }
 
     @Override
     public void onDestroy() {
-        if (dotsTimeline != null) {
-            dotsTimeline.stop();
-        }
-        if (animationTimeline != null) {
-            animationTimeline.stop();
-        }
+        if (dotsTimeline != null) dotsTimeline.stop();
+        if (animationTimeline != null) animationTimeline.stop();
     }
-
 }

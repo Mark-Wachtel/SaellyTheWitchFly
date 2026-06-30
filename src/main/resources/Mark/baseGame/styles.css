@@ -19,7 +19,7 @@
 .custom-title-bar {
     -fx-background-color: rgba(20, 20, 20, 0.95);
     -fx-border-color: #ff9e00;
-    -fx-border-width: 0 0 2 0;
+    -fx-border-width: 0 0 4 0;
 }
 .magic-close-button {
     -fx-stroke: #FFD700;

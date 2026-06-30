@@ -1,6 +1,5 @@
 package Mark.baseGame;
 
-import java.util.Objects;
 
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
@@ -9,35 +8,23 @@ import com.almasb.fxgl.particle.ParticleComponent;
 import com.almasb.fxgl.particle.ParticleEmitters;
 
 import javafx.animation.Animation;
-import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
@@ -196,13 +183,9 @@ public class CustomTitleBar extends HBox
 					FXGL.getGameScene().addUINode(particleEntity.getViewComponent().getParent());
 					magicX.setVisible(false);
 
-					var wholeScene = getScene().getRoot();
-					wholeScene.getStyleClass().add(Settings.getCssClassTitlebarFadeBg());
-
-					FadeTransition fadeOut = new FadeTransition(Duration.seconds(Settings.getTitlebarCloseFadeOutDuration()), wholeScene);
-					fadeOut.setToValue(0.0);
-					fadeOut.setOnFinished(ev -> onCloseClicked.run());
-					fadeOut.play();
+					if (onCloseClicked != null) {
+						onCloseClicked.run();
+					}
 
 				});
 				clickAnim.play();
@@ -296,4 +279,9 @@ public class CustomTitleBar extends HBox
 	public void setOnCloseClicked(Runnable onCloseClicked) {
 		this.onCloseClicked = onCloseClicked;
 	}
+
+	public double getCurtainAnchorY() {
+		return this.localToScene(0, this.getPrefHeight()).getY();
+	}
+
 }

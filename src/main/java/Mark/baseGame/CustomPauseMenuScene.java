@@ -234,9 +234,11 @@ public class CustomPauseMenuScene extends FXGLMenu {
         btnResume.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnResume.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuResume()));
         btnResume.setOnAction(e -> {
-            APP.setGameUIVisibility(true);
-            APP.playGameMusic();
-            fireResume();
+            closeMenuWithAnimation(() -> {
+                APP.setGameUIVisibility(true);
+                APP.playGameMusic();
+                fireResume();
+            });
         });
 
         Button btnOptions = new Button();
@@ -256,16 +258,22 @@ public class CustomPauseMenuScene extends FXGLMenu {
         Button btnMainMenu = new Button();
         btnMainMenu.getStyleClass().add(Settings.getCssClassMagicalBtn());
         btnMainMenu.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuMainmenu()));
+
         btnMainMenu.setOnAction(e -> {
             e.consume();
-            APP.stopAllMusic();
-            APP.setGameUIVisibility(false);
-            CustomMainMenuScene mainMenu = (CustomMainMenuScene) FXGL.getSceneService().getMainMenuScene().get();
-            mainMenu.activateMainMenu();
-
-            PauseTransition delay = new PauseTransition(Duration.millis(Settings.getGhostClickShieldDurationMs()));
-            delay.setOnFinished(event -> FXGL.getGameController().gotoMainMenu());
-            delay.play();
+            closeMenuWithAnimation(() -> {
+                Scene mainMenuTarget = FXGL.getSceneService().getMainMenuScene().orElse(null);
+                APP.getSceneTransitionCoordinator().transition(() -> {
+                    APP.stopAllMusic();
+                    APP.setGameUIVisibility(false);
+                    FXGL.getSceneService().getMainMenuScene().ifPresent(scene -> {
+                        if (scene instanceof CustomMainMenuScene mainMenu) {
+                            mainMenu.activateMainMenu();
+                        }
+                    });
+                    FXGL.getGameController().gotoMainMenu();
+                }, mainMenuTarget);
+            });
         });
 
         Button btnExit = new Button();
@@ -486,7 +494,11 @@ public class CustomPauseMenuScene extends FXGLMenu {
         Button btnYes = new Button();
         btnYes.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuYes()));
         btnYes.getStyleClass().add(Settings.getCssClassMagicalBtn());
-        btnYes.setOnAction(e -> FXGL.getGameController().exit());
+        btnYes.setOnAction(e -> {
+            SceneTransitionCoordinator ec = APP.getSceneTransitionCoordinator();
+            if (ec != null) ec.requestExit(() ->FXGL.getGameController().exit());
+            else FXGL.getGameController().exit();
+        });
 
         Button btnNo = new Button();
         btnNo.textProperty().bind(FXGL.localizedStringProperty(Settings.getLangKeyMenuNo()));
@@ -498,12 +510,32 @@ public class CustomPauseMenuScene extends FXGLMenu {
     }
 
     private void switchMenuVisibility(VBox dynamicToHide, VBox dynamicToShow) {
-        dynamicToHide.setVisible(false);
-        dynamicToShow.setVisible(true);
-        Platform.runLater(() -> {
-            List<Node> nodes = getVisibleFocusableNodes((Parent) getRoot());
-            if (!nodes.isEmpty()) nodes.getFirst().requestFocus();
-        });
+        mainRootPane.setDisable(true);
+
+        SceneTransitionCoordinator coordinator = ((SaellyApp) FXGL.getAppCast()).getSceneTransitionCoordinator();
+
+        if (coordinator != null) {
+            coordinator.fadeOut(dynamicToHide, Duration.seconds(0.15), () -> {
+                dynamicToHide.setVisible(false);
+                dynamicToHide.setOpacity(1.0);
+
+                coordinator.fadeIn(dynamicToShow, Duration.seconds(0.15), () -> {
+                    mainRootPane.setDisable(false);
+                    Platform.runLater(() -> {
+                        List<Node> nodes = getVisibleFocusableNodes((Parent) getRoot());
+                        if (!nodes.isEmpty()) nodes.getFirst().requestFocus();
+                    });
+                });
+            });
+        } else {
+            dynamicToHide.setVisible(false);
+            dynamicToShow.setVisible(true);
+            mainRootPane.setDisable(false);
+            Platform.runLater(() -> {
+                List<Node> nodes = getVisibleFocusableNodes((Parent) getRoot());
+                if (!nodes.isEmpty()) nodes.getFirst().requestFocus();
+            });
+        }
     }
 
     private void assembleLayout() {
@@ -563,7 +595,7 @@ public class CustomPauseMenuScene extends FXGLMenu {
     }
 
     @Override
-    public void onEnteredFrom(com.almasb.fxgl.scene.Scene prevState)
+    public void onEnteredFrom(Scene prevState)
     {
         super.onEnteredFrom(prevState);
 
@@ -571,10 +603,18 @@ public class CustomPauseMenuScene extends FXGLMenu {
         for (VBox box : boxes) if (box != null) box.setVisible(false);
         if (menuBox != null) menuBox.setVisible(true);
 
+        mainRootPane.setDisable(false);
+        APP.getSceneTransitionCoordinator().popIn(mainRootPane, Duration.seconds(0.25), null);
+
         Platform.runLater(() -> {
             List<Node> nodes = getVisibleFocusableNodes((Parent) getRoot());
             if (!nodes.isEmpty()) nodes.getFirst().requestFocus();
         });
+    }
+
+    public void closeMenuWithAnimation(Runnable onFinished) {
+        mainRootPane.setDisable(true);
+        APP.getSceneTransitionCoordinator().popOut(mainRootPane, Duration.seconds(0.15), onFinished);
     }
 
     public boolean handleEscapeBack()

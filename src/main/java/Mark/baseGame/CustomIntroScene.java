@@ -2,14 +2,12 @@ package Mark.baseGame;
 
 import com.almasb.fxgl.app.scene.IntroScene;
 import com.almasb.fxgl.dsl.FXGL;
-import javafx.animation.FadeTransition;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
 public class CustomIntroScene extends IntroScene
 {
-
-    private FadeTransition fadeTransition;
+    private final ImageView logo;
 
     public CustomIntroScene()
     {
@@ -17,28 +15,18 @@ public class CustomIntroScene extends IntroScene
         background.setFitWidth(FXGL.getAppWidth());
         background.setFitHeight(FXGL.getAppHeight());
 
-        ImageView logo = new ImageView(FXGL.image(Settings.getLinkToLogo()));
-
-        logo.setTranslateX(FXGL.getAppWidth() / 2.0 -logo.getImage().getWidth() / 2.0);
-        logo.setTranslateY(FXGL.getAppHeight() / 2.0 -logo.getImage().getHeight() / 2.0);
-
+        logo = new ImageView(FXGL.image(Settings.getLinkToLogo()));
+        logo.setTranslateX(FXGL.getAppWidth() / 2.0 - logo.getImage().getWidth() / 2.0);
+        logo.setTranslateY(FXGL.getAppHeight() / 2.0 - logo.getImage().getHeight() / 2.0);
         logo.setOpacity(0.0);
 
-        fadeTransition = new FadeTransition(Duration.seconds(Settings.getIntroFadeDurationSeconds()), logo);
-        fadeTransition.setFromValue(0.0);
-        fadeTransition.setToValue(1.0);
-
-        fadeTransition.setOnFinished(event -> {
-            finishIntro();
-        });
-        getContentRoot().getChildren().addAll(background,logo);
+        getContentRoot().getChildren().addAll(background, logo);
     }
 
     @Override
     public void startIntro()
     {
-        fadeTransition.play();
+        ((SaellyApp) FXGL.getAppCast()).getSceneTransitionCoordinator()
+                .fadeIn(logo, Duration.seconds(Settings.getIntroFadeDurationSeconds()), this::finishIntro);
     }
-
-
 }

@@ -1,7 +1,9 @@
 package Mark.baseGame;
 
+import com.almasb.fxgl.dsl.FXGL;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 public class Settings
 {
@@ -73,6 +75,15 @@ public class Settings
     private static final int APPICON_UI_IMAGE_HEIGHT = 32;
     private static final double UI_LIVES_OFFSET_Y = 5.0;
     private static final int LOADING_ANIM_MAX_DOTS = 4;
+    private static final String CURTAIN_OPEN_TEXTURE = "ui/CurtainsOpen.png";
+    private static final String CURTAIN_CLOSE_TEXTURE = "ui/CurtainsClose.png";
+    private static final int CURTAIN_COLUMNS = 8;
+    private static final int CURTAIN_FRAME_WIDTH = 960;
+    private static final int CURTAIN_FRAME_HEIGHT = 540;
+    private static final int CURTAIN_OPEN_MAX_FRAME = 77;
+    private static final int CURTAIN_CLOSE_MAX_FRAME = 97;
+    private static final double CURTAIN_OPEN_DURATION_SEC = 2.66;
+    private static final double CURTAIN_CLOSE_DURATION_SEC = 2;
     //Offsets
     private static final double CRASH_EFFECT_OFFSET_X = 0.0;
     private static final double CRASH_EFFECT_OFFSET_Y = 0.0;
@@ -148,8 +159,8 @@ public class Settings
     private static final double BARRIER_GAP = 100.0;
 
     //Weapon system
-    private static final String LINK_TO_DARK_MAGIC_IMAGE = "projectiles/darkMatter.png";
-    private static final String LINK_TO_SHOOT_SOUND = "sounds/shootDarkMagic.wav";
+    private static final String LINK_TO_DARK_MAGIC_IMAGE = "weapons/darkMatterEffect.png";
+    private static final String LINK_TO_SHOOT_SOUND = "darkMagicWeaponFire.wav";
     private static final int DARK_MAGIC_WIDTH = 40;
     private static final int DARK_MAGIC_HEIGHT = 40;
     private static final double DARK_MAGIC_SPEED = 600.0;
@@ -161,6 +172,17 @@ public class Settings
     private static final int DARK_MAGIC_DAMAGE = 10;
     private static final double DARK_MAGIC_RANGE = 800.0;
     private static final String HITBOX_NAME_PROJECTILE = "ProjectileBody";
+    private static final int DARK_MAGIC_ANIM_COLS = 5;
+    private static final int DARK_MAGIC_ANIM_FRAME_WIDTH = 128;
+    private static final int DARK_MAGIC_ANIM_FRAME_HEIGHT = 128;
+    private static final int DARK_MAGIC_ANIM_NUM_FRAMES = 10;
+    private static final double DARK_MAGIC_ANIM_DURATION_SEC = 0.5;
+    private static final String LINK_TO_DARK_MAGIC_EXPLOSION_IMAGE = "weapons/darkMatterExplodeEffect.png";
+    private static final int DARK_MAGIC_EXPLOSION_COLS = 5;
+    private static final int DARK_MAGIC_EXPLOSION_NUM_FRAMES = 9;
+    private static final double DARK_MAGIC_EXPLOSION_DURATION_SEC = 0.4;
+    private static final double DARK_MAGIC_EXPLOSION_WIDTH = 60.0;
+    private static final double DARK_MAGIC_EXPLOSION_HEIGHT = 60.0;
 
 
     //Links zu Bildern, Musik und Sounds
@@ -370,7 +392,7 @@ public class Settings
     private static final int STATUS_INDICATOR_RADIUS = 6;
     private static final int NAME_INPUT_PREF_WIDTH = 120;
     private static final int VIEW_ORDER_BACKGROUND = -1;
-    private static final int VIEW_ORDER_TITLEBAR = -1000;
+    private static final int VIEW_ORDER_TITLEBAR = -10000;
     private static final int VIEW_ORDER_MODAL = -2000;
     private static final int VIEW_ORDER_UI_TOP = -3000;
     private static final String COLOR_HIGHLIGHT_HEX = "#ff9e00";
@@ -423,6 +445,7 @@ public class Settings
     private static final String ERROR_MSG_STARTUP_LOGO = "Fehler: Studio-Logo konnte nicht geladen werden!";
     //Custom Title Bar
     private static final int TITLEBAR_PADDING = 8;
+    private static final double TITLEBAR_BORDER_THICKNESS = 4.0;
     private static final int TITLEBAR_FONT_SIZE = 24;
     private static final double TITLEBAR_LOGO_ANIM_DURATION = 0.2;
     private static final double TITLEBAR_LOGO_CLICK_DURATION = 0.05;
@@ -810,6 +833,7 @@ public class Settings
     {
         return STANDARD_TITLEBAR_HEIGHT;
     }
+    public static double getTitlebarBorderThickness() {return TITLEBAR_BORDER_THICKNESS;}
     public static double getAspectRatio()
     {
         return ASPECT_RATIO;
@@ -1305,6 +1329,16 @@ public class Settings
     public static double getDarkMagicHitboxOffsetX() { return DARK_MAGIC_HITBOX_OFFSET_X; }
     public static double getDarkMagicHitboxOffsetY() { return DARK_MAGIC_HITBOX_OFFSET_Y; }
     public static int getLoadingAnimMaxDots() { return LOADING_ANIM_MAX_DOTS; }
+    public static String getCurtainCloseTexture() {return CURTAIN_CLOSE_TEXTURE;}
+    public static String getCurtainOpenTexture() {return CURTAIN_OPEN_TEXTURE;}
+    public static int getCurtainColumns() {return CURTAIN_COLUMNS;}
+    public static int getCurtainFrameWidth() {return CURTAIN_FRAME_WIDTH;}
+    public static int getCurtainFrameHeight() {return CURTAIN_FRAME_HEIGHT;}
+    public static double getCurtainCloseDurationSec() {return CURTAIN_CLOSE_DURATION_SEC;}
+    public static double getCurtainOpenDurationSec() {return CURTAIN_OPEN_DURATION_SEC;}
+    public static int getCurtainCloseMaxFrame() {return CURTAIN_CLOSE_MAX_FRAME;}
+    public static int getCurtainOpenMaxFrame() {return CURTAIN_OPEN_MAX_FRAME;}
+
     public static String getFormatMenuLabelValue() { return FORMAT_MENU_LABEL_VALUE; }
     public static String getCssClassCustomTitleBar() { return CSS_CLASS_CUSTOM_TITLE_BAR; }
     public static String getCssClassMagicCloseBtn() { return CSS_CLASS_MAGIC_CLOSE_BTN; }
@@ -1437,6 +1471,17 @@ public class Settings
     public static double getDarkMagicCooldownSec() { return DARK_MAGIC_COOLDOWN_SEC; }
     public static double getDarkMagicHitboxWidth() { return DARK_MAGIC_HITBOX_WIDTH; }
     public static double getDarkMagicHitboxHeight() { return DARK_MAGIC_HITBOX_HEIGHT; }
+    public static int getDarkMagicAnimCols() { return DARK_MAGIC_ANIM_COLS; }
+    public static int getDarkMagicAnimFrameWidth() { return DARK_MAGIC_ANIM_FRAME_WIDTH; }
+    public static int getDarkMagicAnimFrameHeight() { return DARK_MAGIC_ANIM_FRAME_HEIGHT; }
+    public static int getDarkMagicAnimNumFrames() { return DARK_MAGIC_ANIM_NUM_FRAMES; }
+    public static double getDarkMagicAnimDurationSec() { return DARK_MAGIC_ANIM_DURATION_SEC; }
+    public static String getLinkToDarkMagicExplosionImage() { return LINK_TO_DARK_MAGIC_EXPLOSION_IMAGE; }
+    public static int getDarkMagicExplosionCols() { return DARK_MAGIC_EXPLOSION_COLS; }
+    public static int getDarkMagicExplosionNumFrames() { return DARK_MAGIC_EXPLOSION_NUM_FRAMES; }
+    public static double getDarkMagicExplosionDurationSec() { return DARK_MAGIC_EXPLOSION_DURATION_SEC; }
+    public static double getDarkMagicExplosionWidth() { return DARK_MAGIC_EXPLOSION_WIDTH; }
+    public static double getDarkMagicExplosionHeight() { return DARK_MAGIC_EXPLOSION_HEIGHT; }
     public static String getCssClassLoadingProgressBar() { return CSS_CLASS_LOADING_PROGRESS_BAR; }
     public static String getFormatCorruptedMessage() { return FORMAT_CORRUPTED_MESSAGE; }
     public static double getProjectileWobbleAmplitude() { return PROJECTILE_WOBBLE_AMPLITUDE; }

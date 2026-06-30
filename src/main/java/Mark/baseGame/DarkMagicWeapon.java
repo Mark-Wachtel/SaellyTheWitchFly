@@ -5,7 +5,12 @@ import com.almasb.fxgl.dsl.components.OffscreenCleanComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.components.CollidableComponent;
 import com.almasb.fxgl.physics.BoundingShape;
+import com.almasb.fxgl.physics.HitBox;
+import com.almasb.fxgl.texture.AnimatedTexture;
+import com.almasb.fxgl.texture.AnimationChannel;
 import javafx.geometry.Point2D;
+import javafx.scene.image.Image;
+import javafx.util.Duration;
 
 public class DarkMagicWeapon implements Weapon
 {
@@ -24,22 +29,44 @@ public class DarkMagicWeapon implements Weapon
 
         Point2D shootDirection = targetPos.subtract(baseSpawnPoint).normalize();
 
-        double width = Settings.getDarkMagicWidth();
-        double height = Settings.getDarkMagicHeight();
+        double frameWidth = Settings.getDarkMagicWidth();
+        double frameHeight = Settings.getDarkMagicHeight();
+
         double hitboxW = Settings.getDarkMagicHitboxWidth();
         double hitboxH = Settings.getDarkMagicHitboxHeight();
 
-        Point2D actualSpawnPoint = new Point2D(spawnX, baseSpawnPoint.getY() - (height / 2.0));
-        double offsetX = ((width - hitboxW) / 2.0) + Settings.getDarkMagicHitboxOffsetX();
-        double offsetY = ((height - hitboxH) / 2.0) + Settings.getDarkMagicHitboxOffsetY();
+        Point2D actualSpawnPoint = new Point2D(spawnX, baseSpawnPoint.getY() - (frameHeight / 2.0));
 
-        var weaponTexture = FXGL.texture(Settings.getLinkToDarkMagicImage(), width, height);
+        double offsetX = ((frameWidth - hitboxW) / 2.0) + Settings.getDarkMagicHitboxOffsetX();
+        double offsetY = ((frameHeight - hitboxH) / 2.0) + Settings.getDarkMagicHitboxOffsetY();
+
+        int cols = Settings.getDarkMagicAnimCols();
+        int frames = Settings.getDarkMagicAnimNumFrames();
+        int rows = (int) Math.ceil((double) frames / cols);
+
+        double totalSheetWidth = frameWidth * cols;
+        double totalSheetHeight = frameHeight * rows;
+
+        Image resizedSheet = FXGL.texture(Settings.getLinkToDarkMagicImage(), totalSheetWidth, totalSheetHeight).getImage();
+
+        AnimationChannel channel = new AnimationChannel(
+                resizedSheet,
+                cols,
+                (int) frameWidth,
+                (int) frameHeight,
+                Duration.seconds(Settings.getDarkMagicAnimDurationSec()),
+                0,
+                frames - 1
+        );
+
+        AnimatedTexture animatedTexture = new AnimatedTexture(channel);
+        animatedTexture.loop();
 
         FXGL.entityBuilder()
                 .type(EntityType.PROJECTILE)
                 .at(actualSpawnPoint)
-                .view(weaponTexture)
-                .bbox(new com.almasb.fxgl.physics.HitBox(Settings.getHitboxNameProjectile(), new Point2D(offsetX, offsetY), BoundingShape.box(hitboxW, hitboxH)))
+                .view(animatedTexture)
+                .bbox(new HitBox(Settings.getHitboxNameProjectile(), new Point2D(offsetX, offsetY), BoundingShape.box(hitboxW, hitboxH)))
                 .with(new OffscreenCleanComponent())
                 .with(new CollidableComponent(true))
                 .with(new CustomProjectileComponent(this, shootDirection, Settings.getDarkMagicSpeed()))
@@ -49,6 +76,44 @@ public class DarkMagicWeapon implements Weapon
         FXGL.play(Settings.getLinkToShootSound());
 
         return true;
+    }
+
+    public static void spawnExplosion(Point2D impactPoint)
+    {
+        double frameWidth = Settings.getDarkMagicExplosionWidth();
+        double frameHeight = Settings.getDarkMagicExplosionHeight();
+        int cols = Settings.getDarkMagicExplosionCols();
+        int frames = Settings.getDarkMagicExplosionNumFrames();
+        int rows = (int) Math.ceil((double) frames / cols);
+
+        double totalSheetWidth = frameWidth * cols;
+        double totalSheetHeight = frameHeight * rows;
+
+        var resizedSheet = FXGL.texture(Settings.getLinkToDarkMagicExplosionImage(), totalSheetWidth, totalSheetHeight).getImage();
+
+        AnimationChannel channel = new AnimationChannel(
+                resizedSheet,
+                cols,
+                (int) frameWidth,
+                (int) frameHeight,
+                Duration.seconds(Settings.getDarkMagicExplosionDurationSec()),
+                0,
+                frames - 1
+        );
+
+        AnimatedTexture animatedTexture = new AnimatedTexture(channel);
+
+        Point2D centeredPosition = impactPoint.subtract(frameWidth / 2.0, frameHeight / 2.0);
+
+        Entity explosionEntity = FXGL.entityBuilder()
+                .at(centeredPosition)
+                .view(animatedTexture)
+                .zIndex(Settings.getZIndexForeground())
+                .buildAndAttach();
+
+        animatedTexture.play();
+
+        animatedTexture.setOnCycleFinished(() -> explosionEntity.removeFromWorld());
     }
 
     @Override
